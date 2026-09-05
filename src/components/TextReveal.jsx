@@ -30,19 +30,11 @@ const modes = {
     visible: { x: 0, y: 0, opacity: 1 },
   },
   /**
-   * Scatter mode — controlled chaos → order.
-   * Words start at deterministic random positions and settle into place.
-   * Positions are seeded by word index so the same text always scatters identically.
+   * Editorial natural reveal — subtle and readable.
    */
   scatter: {
-    hidden: (i) => ({
-      x: (seededRandom(i, 1) - 0.5) * 60,
-      y: (seededRandom(i, 2) - 0.5) * 40 + 15,
-      rotate: (seededRandom(i, 3) - 0.5) * 6,
-      scale: 0.92 + seededRandom(i, 4) * 0.16,
-      opacity: 0,
-    }),
-    visible: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 },
+    hidden: { y: 10, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
   },
 };
 
@@ -50,9 +42,10 @@ export default function TextReveal({
   text,
   tag: Tag = 'p',
   className = '',
+  style = {},
   delay = 0,
   mode = 'slide-up',
-  staggerChildren = 0.03,
+  staggerChildren = 0.02,
 }) {
   const ref = useRef(null);
   const { hasBeenInView } = useInView(ref, { threshold: 0.15 });
@@ -62,30 +55,31 @@ export default function TextReveal({
   const modeConfig = modes[mode] || modes['slide-up'];
 
   if (prefersReducedMotion) {
-    return <Tag className={className}>{text}</Tag>;
+    return (
+      <Tag className={className} style={style}>
+        {text}
+      </Tag>
+    );
   }
 
-  // Scatter mode uses a longer, spring-like settle for the "chaos → order" feel
-  const isScatter = mode === 'scatter';
-
   return (
-    <Tag ref={ref} className={className} aria-label={text}>
+    <Tag ref={ref} className={className} style={style} aria-label={text}>
       <motion.span
-        style={{ display: 'flex', flexWrap: 'wrap', gap: '0 0.3em' }}
+        style={{ display: 'inline' }}
         initial="hidden"
         animate={hasBeenInView ? 'visible' : 'hidden'}
         variants={{
           hidden: {},
           visible: {
             transition: {
-              staggerChildren: isScatter ? 0.02 : staggerChildren,
+              staggerChildren: staggerChildren || 0.015,
               delayChildren: delay,
             },
           },
         }}
       >
         {words.map((word, i) => (
-          <span key={i} style={{ overflow: 'hidden', display: 'inline-block' }}>
+          <span key={i} style={{ display: 'inline-block', whiteSpace: 'pre' }}>
             <motion.span
               style={{ display: 'inline-block' }}
               variants={{
@@ -95,23 +89,17 @@ export default function TextReveal({
                     : modeConfig.hidden,
                 visible: {
                   ...modeConfig.visible,
-                  transition: isScatter
-                    ? {
-                        duration: 0.7,
-                        ease: [0.16, 1, 0.3, 1],
-                        // All words settle roughly together regardless of stagger start
-                        delay: seededRandom(i, 5) * 0.15,
-                      }
-                    : {
-                        duration: 0.5,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      },
+                  transition: {
+                    duration: 0.45,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
                 },
               }}
               aria-hidden="true"
             >
               {word}
             </motion.span>
+            {i < words.length - 1 ? ' ' : ''}
           </span>
         ))}
       </motion.span>

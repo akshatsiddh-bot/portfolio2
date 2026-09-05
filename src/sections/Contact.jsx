@@ -115,14 +115,19 @@ export default function Contact() {
           <MetadataLabel>06 / 06 — Contact</MetadataLabel>
         </motion.div>
 
-        {/* Heading */}
-        <div ref={headingRef} className="mb-6">
+        {/* Heading — improved visual typography & composition */}
+        <div ref={headingRef} className="mb-8 max-w-2xl mx-auto">
           <TextReveal
             text="Let's build something meaningful."
             tag="h2"
             className="text-display"
             mode="slide-up"
-            staggerChildren={0.05}
+            staggerChildren={0.03}
+            style={{
+              fontSize: 'clamp(2.5rem, 5.8vw, 4.5rem)',
+              lineHeight: 1.12,
+              letterSpacing: '-0.02em',
+            }}
           />
         </div>
 

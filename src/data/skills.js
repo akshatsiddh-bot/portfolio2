@@ -69,58 +69,55 @@ export const skills = [
 
 /** Connections between related technologies — [skillId, skillId] */
 export const connections = [
-  // JavaScript ecosystem
+  // Inter-cluster architectural bridges
   ['javascript', 'react'],
   ['javascript', 'nodejs'],
-  ['javascript', 'typescript'],
-  ['javascript', 'redux'],
   ['typescript', 'react'],
+  ['nodejs', 'mongodb'],
+  ['nodejs', 'docker'],
+  ['postman', 'rest-apis'],
+  ['vitest', 'vite'],
+  ['github', 'github-actions'],
 
-  // React ecosystem
-  ['react', 'redux'],
-  ['react', 'react-router'],
-  ['react', 'framer-motion'],
-  ['react', 'tailwind'],
+  // Languages cluster
+  ['javascript', 'typescript'],
+  ['c', 'cpp'],
+  ['html', 'css'],
+  ['python', 'sql'],
+
+  // Frontend cluster
   ['react', 'vite'],
+  ['react', 'tailwind'],
+  ['react', 'react-router'],
+  ['react', 'redux'],
+  ['react', 'framer-motion'],
+  ['tailwind', 'bootstrap'],
 
-  // Node.js ecosystem
+  // Backend cluster
   ['nodejs', 'express'],
-  ['nodejs', 'rest-apis'],
-  ['nodejs', 'npm'],
   ['express', 'rest-apis'],
   ['express', 'graphql'],
 
-  // Database connections
-  ['mongodb', 'express'],
-  ['mongodb', 'nodejs'],
-  ['mysql', 'sql'],
+  // Databases cluster
+  ['mongodb', 'redis'],
+  ['mysql', 'postgresql'],
   ['postgresql', 'sql'],
-  ['redis', 'nodejs'],
-  ['firebase', 'react'],
+  ['firebase', 'mongodb'],
 
-  // CSS connections
-  ['css', 'tailwind'],
-  ['css', 'bootstrap'],
-  ['html', 'css'],
-  ['html', 'react'],
-
-  // DevOps connections
+  // DevOps cluster
   ['docker', 'nginx'],
   ['docker', 'aws'],
-  ['github', 'github-actions'],
   ['github-actions', 'cicd'],
-  ['vercel', 'react'],
+  ['vercel', 'render'],
+
+  // Tools cluster
   ['git', 'github'],
-
-  // Testing connections
-  ['jest', 'react'],
-  ['vitest', 'vite'],
-  ['cypress', 'react'],
-  ['playwright', 'react'],
-
-  // Tool connections
   ['vscode', 'git'],
-  ['postman', 'rest-apis'],
-  ['npm', 'nodejs'],
-  ['figma', 'css'],
+  ['postman', 'devtools'],
+  ['npm', 'git'],
+
+  // Testing cluster
+  ['jest', 'vitest'],
+  ['cypress', 'playwright'],
+  ['jest', 'cypress'],
 ];

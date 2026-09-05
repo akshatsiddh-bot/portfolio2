@@ -114,7 +114,8 @@ function SkillsGrid() {
   );
 }
 
-/* ── Desktop: SVG Constellation ── */
+const HUB_SKILLS = new Set(['javascript', 'react', 'nodejs', 'docker', 'mongodb']);
+
 function SkillsConstellation() {
   const [hoveredSkill, setHoveredSkill] = useState(null);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -141,158 +142,196 @@ function SkillsConstellation() {
   const shouldShow = hasAnimated || prefersReducedMotion;
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 1000 600"
-      className="w-full h-auto"
-      style={{ maxHeight: '70vh' }}
-      role="img"
-      aria-label="Skills constellation — interactive visualization of technical skills"
-    >
-      {/* Connection lines */}
-      {connections.map(([a, b], i) => {
-        const posA = positions[a];
-        const posB = positions[b];
-        if (!posA || !posB) return null;
+    <div className="relative">
+      {/* Interaction cue */}
+      <div className="flex items-center gap-2 mb-4 text-meta" style={{ opacity: 0.8 }}>
+        <span
+          className="inline-block rounded-full animate-pulse"
+          style={{ width: '6px', height: '6px', backgroundColor: 'var(--accent-current)' }}
+          aria-hidden="true"
+        />
+        <span>Interactive Constellation · Hover nodes to trace connections</span>
+      </div>
 
-        const isHighlighted =
-          hoveredSkill && (a === hoveredSkill || b === hoveredSkill);
-        const isDimmed = hoveredSkill && !isHighlighted;
+      <svg
+        ref={svgRef}
+        viewBox="0 0 1000 600"
+        className="w-full h-auto"
+        style={{ maxHeight: '70vh' }}
+        role="img"
+        aria-label="Skills constellation — interactive visualization of technical skills"
+      >
+        {/* Connection lines */}
+        {connections.map(([a, b], i) => {
+          const posA = positions[a];
+          const posB = positions[b];
+          if (!posA || !posB) return null;
 
-        return (
-          <motion.line
-            key={`conn-${i}`}
-            x1={posA.x}
-            y1={posA.y}
-            x2={posB.x}
-            y2={posB.y}
-            stroke={isHighlighted ? 'var(--accent-current)' : 'var(--line)'}
-            strokeWidth={isHighlighted ? 1.5 : 0.5}
-            initial={
-              prefersReducedMotion ? { opacity: isDimmed ? 0.08 : 0.2 } : { pathLength: 0, opacity: 0 }
-            }
-            animate={
-              shouldShow
-                ? {
-                    pathLength: 1,
-                    opacity: isDimmed ? 0.06 : isHighlighted ? 0.7 : 0.2,
-                  }
-                : {}
-            }
-            transition={{
-              pathLength: { duration: 1, delay: 0.3 + i * 0.01 },
-              opacity: { duration: 0.3 },
-            }}
-          />
-        );
-      })}
+          const isHighlighted =
+            hoveredSkill && (a === hoveredSkill || b === hoveredSkill);
+          const isDimmed = hoveredSkill && !isHighlighted;
 
-      {/* Category labels */}
-      {CATEGORIES.map((cat) => {
-        const center = centers[cat.id];
-        if (!center) return null;
-        return (
-          <motion.text
-            key={`label-${cat.id}`}
-            x={center.x}
-            y={center.y - 70}
-            textAnchor="middle"
-            fill="var(--text-tertiary)"
-            fontSize={10}
-            fontFamily="Inter, sans-serif"
-            fontWeight={500}
-            letterSpacing="0.1em"
-            style={{ textTransform: 'uppercase' }}
-            initial={prefersReducedMotion ? {} : { opacity: 0 }}
-            animate={shouldShow ? { opacity: 0.6 } : {}}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            {cat.name}
-          </motion.text>
-        );
-      })}
-
-      {/* Skill nodes */}
-      {skills.map((skill, i) => {
-        const pos = positions[skill.id];
-        if (!pos) return null;
-
-        const isHovered = hoveredSkill === skill.id;
-        const isConnected = connectedSet.has(skill.id);
-        const isDimmed = hoveredSkill && !isHovered && !isConnected;
-        const catColor = getCategoryColor(skill.category);
-
-        return (
-          <g
-            key={skill.id}
-            onMouseEnter={() => setHoveredSkill(skill.id)}
-            onMouseLeave={() => setHoveredSkill(null)}
-            style={{ cursor: 'pointer' }}
-          >
-            {/* Node circle */}
-            <motion.circle
-              cx={pos.x}
-              cy={pos.y}
-              r={isHovered ? 7 : isConnected ? 5 : 4}
-              fill={catColor}
-              initial={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
+          return (
+            <motion.line
+              key={`conn-${i}`}
+              x1={posA.x}
+              y1={posA.y}
+              x2={posB.x}
+              y2={posB.y}
+              stroke={isHighlighted ? 'var(--accent-current)' : 'var(--line)'}
+              strokeWidth={isHighlighted ? 1.5 : 0.5}
+              strokeDasharray={isHighlighted ? 'none' : '2 2'}
+              initial={
+                prefersReducedMotion ? { opacity: isDimmed ? 0.05 : 0.18 } : { pathLength: 0, opacity: 0 }
+              }
               animate={
                 shouldShow
                   ? {
-                      scale: 1,
-                      opacity: isDimmed ? 0.25 : 1,
+                      pathLength: 1,
+                      opacity: isDimmed ? 0.04 : isHighlighted ? 0.8 : 0.2,
                     }
                   : {}
               }
               transition={{
-                scale: {
-                  duration: 0.4,
-                  delay: 0.4 + i * 0.02,
-                  type: 'spring',
-                  stiffness: 300,
-                },
-                opacity: { duration: 0.2 },
+                pathLength: { duration: 0.8, delay: 0.2 + i * 0.015 },
+                opacity: { duration: 0.25 },
               }}
             />
+          );
+        })}
 
-            {/* Hover ring */}
-            {isHovered && (
+        {/* Category labels */}
+        {CATEGORIES.map((cat) => {
+          const center = centers[cat.id];
+          if (!center) return null;
+          return (
+            <motion.text
+              key={`label-${cat.id}`}
+              x={center.x}
+              y={center.y - 70}
+              textAnchor="middle"
+              fill="var(--text-tertiary)"
+              fontSize={10}
+              fontFamily="Inter, sans-serif"
+              fontWeight={500}
+              letterSpacing="0.1em"
+              style={{ textTransform: 'uppercase' }}
+              initial={prefersReducedMotion ? {} : { opacity: 0 }}
+              animate={shouldShow ? { opacity: 0.6 } : {}}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              {cat.name}
+            </motion.text>
+          );
+        })}
+
+        {/* Skill nodes */}
+        {skills.map((skill, i) => {
+          const pos = positions[skill.id];
+          if (!pos) return null;
+
+          const isHovered = hoveredSkill === skill.id;
+          const isConnected = connectedSet.has(skill.id);
+          const isDimmed = hoveredSkill && !isHovered && !isConnected;
+          const catColor = getCategoryColor(skill.category);
+          const isHub = HUB_SKILLS.has(skill.id);
+
+          return (
+            <g
+              key={skill.id}
+              onMouseEnter={() => setHoveredSkill(skill.id)}
+              onMouseLeave={() => setHoveredSkill(null)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Resting beacon pulse for hub skills */}
+              {isHub && !hoveredSkill && !prefersReducedMotion && (
+                <motion.circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={4}
+                  fill="none"
+                  stroke={catColor}
+                  strokeWidth={0.75}
+                  animate={{
+                    r: [4, 12, 14],
+                    opacity: [0.55, 0.15, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                    delay: (i % 4) * 0.6,
+                  }}
+                />
+              )}
+
+              {/* Node circle */}
               <motion.circle
                 cx={pos.x}
                 cy={pos.y}
-                r={12}
-                fill="none"
-                stroke={catColor}
-                strokeWidth={1}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.4 }}
-                transition={{ duration: 0.2 }}
+                r={isHovered ? 7 : isConnected ? 5.5 : 4}
+                fill={catColor}
+                initial={prefersReducedMotion ? {} : { scale: 0, opacity: 0 }}
+                animate={
+                  shouldShow
+                    ? {
+                        scale: isHovered ? 1.25 : isConnected ? 1.15 : [1, 1.08, 1],
+                        opacity: isDimmed ? 0.2 : 1,
+                      }
+                    : {}
+                }
+                transition={{
+                  scale: isHovered || isConnected
+                    ? { duration: 0.2 }
+                    : {
+                        duration: 3.2 + (i % 3),
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                        delay: (i % 5) * 0.3,
+                      },
+                  opacity: { duration: 0.2 },
+                }}
               />
-            )}
 
-            {/* Label */}
-            <motion.text
-              x={pos.x}
-              y={pos.y + (isHovered ? -14 : 16)}
-              textAnchor="middle"
-              fill={isHovered ? 'var(--text-primary)' : 'var(--text-secondary)'}
-              fontSize={isHovered ? 12 : 9}
-              fontFamily="Inter, sans-serif"
-              fontWeight={isHovered ? 600 : 400}
-              initial={prefersReducedMotion ? {} : { opacity: 0 }}
-              animate={
-                shouldShow
-                  ? { opacity: isDimmed ? 0.2 : isHovered ? 1 : 0.7 }
-                  : {}
-              }
-              transition={{ duration: 0.3, delay: 0.5 + i * 0.01 }}
-            >
-              {skill.name}
-            </motion.text>
-          </g>
-        );
-      })}
-    </svg>
+              {/* Hover ring */}
+              {isHovered && (
+                <motion.circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={13}
+                  fill="none"
+                  stroke={catColor}
+                  strokeWidth={1}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 0.5 }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+
+              {/* Label */}
+              <motion.text
+                x={pos.x}
+                y={pos.y + (isHovered ? -14 : 16)}
+                textAnchor="middle"
+                fill={isHovered ? 'var(--text-primary)' : 'var(--text-secondary)'}
+                fontSize={isHovered ? 12 : 9}
+                fontFamily="Inter, sans-serif"
+                fontWeight={isHovered ? 600 : 400}
+                initial={prefersReducedMotion ? {} : { opacity: 0 }}
+                animate={
+                  shouldShow
+                    ? { opacity: isDimmed ? 0.2 : isHovered ? 1 : 0.7 }
+                    : {}
+                }
+                transition={{ duration: 0.3, delay: 0.5 + i * 0.01 }}
+              >
+                {skill.name}
+              </motion.text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 

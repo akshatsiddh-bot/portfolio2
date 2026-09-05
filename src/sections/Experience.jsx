@@ -12,12 +12,11 @@ import { timeline } from '../data/timeline';
 gsap.registerPlugin(ScrollTrigger);
 
 /* ──────────────────────────────────────────────
-   EXPERIENCE — Evolution Timeline
+   EXPERIENCE
    05 / 06
-   Calmer pacing than Projects. The timeline spine
-   grows as the user scrolls, with entries revealing
-   progressively. Should feel like an evolution of
-   the project sequence, not a standalone section.
+   Timeline of roles, contributions, and practical experience.
+   The timeline spine grows as the user scrolls, with entries
+   revealing progressively.
    ────────────────────────────────────────────── */
 
 function TimelineEntry({ entry, index, isLast }) {
@@ -152,7 +151,7 @@ export default function Experience() {
           animate={hasBeenInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          Learning by building.
+          Work & experience.
         </motion.h2>
         <motion.p
           className="text-sm leading-relaxed max-w-xl mb-16"
@@ -161,7 +160,7 @@ export default function Experience() {
           animate={hasBeenInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          A progression from fundamentals to full-stack development, built through real projects and consistent practice.
+          Practical software engineering, technical contributions, and project development milestones.
         </motion.p>
 
         <FineRule className="mb-12" delay={0.3} />

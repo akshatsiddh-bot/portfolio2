@@ -144,6 +144,75 @@ export default function Hero() {
   const firstLetters = personal.firstName.split('');
   const lastLetters = personal.lastName.split('');
 
+  const headingRef = useRef(null);
+  const letterRefs = useRef([]);
+  const [lensState, setLensState] = useState({ active: false, x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    if (!headingRef.current || isMobile || prefersReducedMotion) return;
+    const rect = headingRef.current.getBoundingClientRect();
+    setLensState({
+      active: true,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleMouseEnter = () => {
+    if (!isMobile && !prefersReducedMotion) {
+      setLensState((prev) => ({ ...prev, active: true }));
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setLensState({ active: false, x: 0, y: 0 });
+  };
+
+  const getLetterStyle = (idx) => {
+    if (!lensState.active || prefersReducedMotion || isMobile) return {};
+    const el = letterRefs.current[idx];
+    if (!el || !headingRef.current) return {};
+
+    const headingRect = headingRef.current.getBoundingClientRect();
+    const letterRect = el.getBoundingClientRect();
+    const lx = letterRect.left + letterRect.width / 2 - headingRect.left;
+    const ly = letterRect.top + letterRect.height / 2 - headingRect.top;
+
+    const dx = lx - lensState.x;
+    const dy = ly - lensState.y;
+    const dist = Math.hypot(dx, dy);
+
+    const LENS_RADIUS = 110;
+    const REFRACTION_ZONE = 75;
+
+    // Inside lens: clearly recognizable, subtle crisp magnification
+    if (dist < LENS_RADIUS - 15) {
+      return {
+        transform: 'scale(1.05)',
+        transition: 'transform 0.12s ease-out',
+      };
+    }
+
+    // Surrounding rim: subtly bent/refracted along radial vector
+    if (dist < LENS_RADIUS + REFRACTION_ZONE) {
+      const normalized = (dist - (LENS_RADIUS - 15)) / REFRACTION_ZONE;
+      const force = Math.sin(normalized * Math.PI) * 11;
+      const angle = Math.atan2(dy, dx);
+      const pushX = Math.cos(angle) * force;
+      const pushY = Math.sin(angle) * force;
+      const rotate = Math.cos(angle) * (dx > 0 ? 3 : -3);
+
+      return {
+        transform: `translate3d(${pushX.toFixed(1)}px, ${pushY.toFixed(1)}px, 0) rotate(${rotate.toFixed(1)}deg) skewX(${(pushX * 0.35).toFixed(1)}deg)`,
+        transition: 'transform 0.08s ease-out',
+      };
+    }
+
+    return {
+      transition: 'transform 0.2s ease-out',
+    };
+  };
+
   return (
     <section
       ref={heroRef}
@@ -160,47 +229,93 @@ export default function Hero() {
 
       {/* Main content */}
       <div className="text-center px-6">
-        {/* Name — First */}
-        <h1 className="text-display" style={{ fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
-          <span ref={nameFirstRef} className="inline-block">
-            {prefersReducedMotion ? (
-              personal.firstName
-            ) : (
-              firstLetters.map((letter, i) => (
-                <motion.span
-                  key={`first-${i}`}
-                  className="inline-block"
-                  custom={i}
-                  initial="hidden"
-                  animate="visible"
-                  variants={letterVariants}
-                >
-                  {letter}
-                </motion.span>
-              ))
-            )}
-          </span>
-          <br />
-          {/* Name — Last */}
-          <span ref={nameLastRef} className="inline-block">
-            {prefersReducedMotion ? (
-              personal.lastName
-            ) : (
-              lastLetters.map((letter, i) => (
-                <motion.span
-                  key={`last-${i}`}
-                  className="inline-block"
-                  custom={i + firstLetters.length}
-                  initial="hidden"
-                  animate="visible"
-                  variants={letterVariants}
-                >
-                  {letter}
-                </motion.span>
-              ))
-            )}
-          </span>
-        </h1>
+        {/* Name with circular lens hover interaction */}
+        <div
+          ref={headingRef}
+          className="relative inline-block select-none cursor-default"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Circular lens element */}
+          {lensState.active && !prefersReducedMotion && (
+            <div
+              className="absolute pointer-events-none rounded-full"
+              style={{
+                left: lensState.x,
+                top: lensState.y,
+                width: 220,
+                height: 220,
+                transform: 'translate(-50%, -50%)',
+                border:
+                  '1.5px solid color-mix(in srgb, var(--accent-current) 45%, transparent)',
+                boxShadow:
+                  '0 0 26px color-mix(in srgb, var(--accent-current) 14%, transparent), inset 0 0 20px color-mix(in srgb, var(--accent-current) 10%, transparent)',
+                background:
+                  'radial-gradient(circle at 35% 35%, color-mix(in srgb, #fff 12%, transparent) 0%, transparent 65%)',
+                backdropFilter: 'blur(0.5px)',
+                WebkitBackdropFilter: 'blur(0.5px)',
+                zIndex: 20,
+              }}
+            >
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  border: '1px solid color-mix(in srgb, #fff 25%, transparent)',
+                  opacity: 0.5,
+                }}
+              />
+            </div>
+          )}
+
+          <h1 className="text-display" style={{ fontSize: 'clamp(3rem, 10vw, 7.5rem)' }}>
+            <span ref={nameFirstRef} className="inline-block">
+              {prefersReducedMotion ? (
+                personal.firstName
+              ) : (
+                firstLetters.map((letter, i) => (
+                  <motion.span
+                    key={`first-${i}`}
+                    ref={(el) => (letterRefs.current[i] = el)}
+                    className="inline-block"
+                    custom={i}
+                    initial="hidden"
+                    animate="visible"
+                    variants={letterVariants}
+                    style={getLetterStyle(i)}
+                  >
+                    {letter}
+                  </motion.span>
+                ))
+              )}
+            </span>
+            <br />
+            {/* Name — Last */}
+            <span ref={nameLastRef} className="inline-block">
+              {prefersReducedMotion ? (
+                personal.lastName
+              ) : (
+                lastLetters.map((letter, i) => {
+                  const letterIdx = i + firstLetters.length;
+                  return (
+                    <motion.span
+                      key={`last-${i}`}
+                      ref={(el) => (letterRefs.current[letterIdx] = el)}
+                      className="inline-block"
+                      custom={letterIdx}
+                      initial="hidden"
+                      animate="visible"
+                      variants={letterVariants}
+                      style={getLetterStyle(letterIdx)}
+                    >
+                      {letter}
+                    </motion.span>
+                  );
+                })
+              )}
+            </span>
+          </h1>
+        </div>
 
         {/* Metadata — role migrates during transformation */}
         <div className="mt-8 space-y-3">

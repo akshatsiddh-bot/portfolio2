@@ -92,7 +92,6 @@ export default function CustomCursor() {
   // Don't render on touch or reduced motion
   if (isTouch || prefersReducedMotion) return null;
 
-  const size = CURSOR_SIZES[variant] || CURSOR_SIZES.default;
   const hasLabel = variant === 'project' || variant === 'copy';
 
   return (
@@ -105,51 +104,100 @@ export default function CustomCursor() {
         transform: 'translate3d(-100px, -100px, 0)',
       }}
     >
-      <motion.div
-        animate={{
-          width: size,
-          height: size,
-          opacity: isVisible ? 1 : 0,
-          x: -size / 2,
-          y: -size / 2,
-        }}
-        transition={{
-          width: { type: 'spring', stiffness: 400, damping: 28 },
-          height: { type: 'spring', stiffness: 400, damping: 28 },
-          opacity: { duration: 0.2 },
-        }}
-        style={{
-          borderRadius: hasLabel ? '4px' : '50%',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          backgroundColor: 'color-mix(in srgb, var(--accent-current) 10%, var(--bg-current) 20%)',
-          border: '1px solid color-mix(in srgb, var(--accent-current) 22%, transparent)',
-          boxShadow: '0 1px 4px color-mix(in srgb, var(--accent-current) 8%, transparent)',
-        }}
-        className="flex items-center justify-center"
-      >
-        <AnimatePresence mode="wait">
-          {hasLabel && (
-            <motion.span
-              key={label || variant}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
+      <AnimatePresence mode="wait">
+        {hasLabel ? (
+          /* Glass card for VIEW / COPY / COPIED */
+          <motion.div
+            key="label-cursor"
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{
+              scale: 1,
+              opacity: isVisible ? 1 : 0,
+              width: 52,
+              height: 52,
+              x: -26,
+              y: -26,
+            }}
+            exit={{ scale: 0.7, opacity: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 450,
+              damping: 30,
+            }}
+            style={{
+              borderRadius: '6px',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              backgroundColor:
+                'color-mix(in srgb, var(--accent-current) 14%, var(--bg-current) 22%)',
+              border:
+                '1px solid color-mix(in srgb, var(--accent-current) 26%, transparent)',
+              boxShadow:
+                '0 2px 8px color-mix(in srgb, var(--accent-current) 10%, transparent)',
+            }}
+            className="flex items-center justify-center"
+          >
+            <span
               style={{
-                fontSize: '8px',
+                fontSize: '8.5px',
                 fontWeight: 600,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--text-secondary)',
+                color: 'var(--text-primary)',
                 whiteSpace: 'nowrap',
               }}
             >
               {label || (variant === 'project' ? 'VIEW' : 'COPY')}
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </span>
+          </motion.div>
+        ) : (
+          /* Pointing arrow cursor shape */
+          <motion.div
+            key="arrow-cursor"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{
+              opacity: isVisible ? 1 : 0,
+              scale: variant === 'link' ? 1.18 : 1,
+              x: 0,
+              y: 0,
+            }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{
+              scale: { type: 'spring', stiffness: 450, damping: 28 },
+              opacity: { duration: 0.15 },
+            }}
+            style={{
+              filter:
+                'drop-shadow(0 2px 5px color-mix(in srgb, var(--accent-current) 20%, rgba(0,0,0,0.12)))',
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                display: 'block',
+                transform: 'translate(-2px, -2px)',
+              }}
+            >
+              {/* Pointing arrow geometry with tip at (2.5, 1.5) */}
+              <path
+                d="M 2.5 1.5 L 2.5 19 L 7.2 14.3 L 11.2 22.2 L 13.8 20.8 L 9.8 13 L 17 13 Z"
+                fill="color-mix(in srgb, var(--accent-current) 18%, var(--bg-current) 35%)"
+                stroke="color-mix(in srgb, var(--accent-current) 75%, var(--text-primary) 25%)"
+                strokeWidth="1.2"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                style={{
+                  backdropFilter: 'blur(8px)',
+                }}
+              />
+            </svg>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

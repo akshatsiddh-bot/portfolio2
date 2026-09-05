@@ -9,11 +9,10 @@ import FineRule from '../components/FineRule';
 import { personal } from '../data/personal';
 
 /* ──────────────────────────────────────────────
-   ABOUT — Information Dump
+   ABOUT
    02 / 06
-   Controlled chaos → order. Words scatter in from
-   deterministic positions and settle into clean
-   editorial layout. Timeline moved to Experience.
+   Polished editorial overview with subtle,
+   natural typography reveals.
    ────────────────────────────────────────────── */
 
 export default function About() {
@@ -35,21 +34,20 @@ export default function About() {
           <MetadataLabel>02 / 06 — About</MetadataLabel>
         </motion.div>
 
-        {/* Heading — scatter: controlled chaos → order */}
+        {/* Heading */}
         <div className="mb-12">
           <TextReveal
             text="Building modern digital experiences with clean and scalable solutions."
             tag="h2"
             className="text-display leading-tight"
-            mode="scatter"
+            mode="slide-up"
             staggerChildren={0.02}
           />
         </div>
 
         <FineRule className="mb-12" delay={0.3} />
 
-        {/* About paragraphs — first two use scatter for the information dump,
-            remaining use slide-up for contrast/pacing */}
+        {/* About paragraphs — clean editorial reveal */}
         <div className="space-y-6 mb-20 max-w-2xl">
           {personal.about.map((paragraph, i) => (
             <TextReveal
@@ -57,9 +55,9 @@ export default function About() {
               text={paragraph}
               tag="p"
               className="text-base leading-relaxed"
-              mode={i < 2 ? 'scatter' : 'slide-up'}
-              delay={0.1 * i + 0.15}
-              staggerChildren={i < 2 ? 0.02 : 0.015}
+              mode="slide-up"
+              delay={0.08 * i + 0.1}
+              staggerChildren={0.012}
             />
           ))}
         </div>
