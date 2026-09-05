@@ -3,6 +3,15 @@ import { motion } from 'framer-motion';
 import { useInView } from '../systems/useInView';
 import { useReducedMotion } from '../systems/useReducedMotion';
 
+/**
+ * Deterministic pseudo-random: same index always produces same value.
+ * Uses a simple hash to avoid Math.random() non-determinism.
+ */
+function seededRandom(index, seed = 0) {
+  const x = Math.sin((index + 1) * 9301 + seed * 49297) * 49297;
+  return x - Math.floor(x);
+}
+
 const modes = {
   'slide-up': {
     hidden: { y: 20, opacity: 0 },
@@ -14,11 +23,26 @@ const modes = {
   },
   burst: {
     hidden: (i) => ({
-      x: (Math.sin(i * 2.7) * 12),
+      x: Math.sin(i * 2.7) * 12,
       y: 10 + Math.cos(i * 1.9) * 8,
       opacity: 0,
     }),
     visible: { x: 0, y: 0, opacity: 1 },
+  },
+  /**
+   * Scatter mode — controlled chaos → order.
+   * Words start at deterministic random positions and settle into place.
+   * Positions are seeded by word index so the same text always scatters identically.
+   */
+  scatter: {
+    hidden: (i) => ({
+      x: (seededRandom(i, 1) - 0.5) * 60,
+      y: (seededRandom(i, 2) - 0.5) * 40 + 15,
+      rotate: (seededRandom(i, 3) - 0.5) * 6,
+      scale: 0.92 + seededRandom(i, 4) * 0.16,
+      opacity: 0,
+    }),
+    visible: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 },
   },
 };
 
@@ -37,10 +61,12 @@ export default function TextReveal({
   const words = text.split(' ');
   const modeConfig = modes[mode] || modes['slide-up'];
 
-  // Reduced motion: render immediately
   if (prefersReducedMotion) {
     return <Tag className={className}>{text}</Tag>;
   }
+
+  // Scatter mode uses a longer, spring-like settle for the "chaos → order" feel
+  const isScatter = mode === 'scatter';
 
   return (
     <Tag ref={ref} className={className} aria-label={text}>
@@ -52,7 +78,7 @@ export default function TextReveal({
           hidden: {},
           visible: {
             transition: {
-              staggerChildren,
+              staggerChildren: isScatter ? 0.02 : staggerChildren,
               delayChildren: delay,
             },
           },
@@ -69,10 +95,17 @@ export default function TextReveal({
                     : modeConfig.hidden,
                 visible: {
                   ...modeConfig.visible,
-                  transition: {
-                    duration: 0.5,
-                    ease: [0.25, 0.1, 0.25, 1],
-                  },
+                  transition: isScatter
+                    ? {
+                        duration: 0.7,
+                        ease: [0.16, 1, 0.3, 1],
+                        // All words settle roughly together regardless of stagger start
+                        delay: seededRandom(i, 5) * 0.15,
+                      }
+                    : {
+                        duration: 0.5,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      },
                 },
               }}
               aria-hidden="true"

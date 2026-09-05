@@ -42,6 +42,8 @@ function CopyEmailButton() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="text-lg md:text-xl font-display transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-3"
+        data-cursor="copy"
+        data-cursor-label={copied ? 'COPIED' : 'COPY'}
         style={{
           color: isHovered ? 'var(--accent-current)' : 'var(--text-primary)',
           borderBottom: `1px solid ${isHovered ? 'var(--accent-current)' : 'transparent'}`,
@@ -110,7 +112,7 @@ export default function Contact() {
           animate={hasBeenInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5 }}
         >
-          <MetadataLabel>05 / 05 — Contact</MetadataLabel>
+          <MetadataLabel>06 / 06 — Contact</MetadataLabel>
         </motion.div>
 
         {/* Heading */}

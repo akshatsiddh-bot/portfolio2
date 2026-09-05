@@ -7,88 +7,20 @@ import TextReveal from '../components/TextReveal';
 import MetadataLabel from '../components/MetadataLabel';
 import FineRule from '../components/FineRule';
 import { personal } from '../data/personal';
-import { timeline } from '../data/timeline';
 
 /* ──────────────────────────────────────────────
    ABOUT — Information Dump
-   Chaos → Composition text reveal, editorial timeline
+   02 / 06
+   Controlled chaos → order. Words scatter in from
+   deterministic positions and settle into clean
+   editorial layout. Timeline moved to Experience.
    ────────────────────────────────────────────── */
-
-function TimelineEntry({ entry, index, isLast }) {
-  const ref = useRef(null);
-  const { hasBeenInView } = useInView(ref, { threshold: 0.3 });
-  const prefersReducedMotion = useReducedMotion();
-  const isEven = index % 2 === 0;
-
-  return (
-    <div ref={ref} className="relative flex items-start gap-6 md:gap-10">
-      {/* Timeline connector */}
-      <div className="flex flex-col items-center flex-shrink-0" style={{ width: '60px' }}>
-        {/* Year */}
-        <motion.span
-          className="text-meta-accent font-mono text-xs tabular-nums"
-          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.8 }}
-          animate={hasBeenInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          {entry.year}
-        </motion.span>
-        {/* Dot */}
-        <motion.div
-          className="my-2 rounded-full"
-          style={{
-            width: '8px',
-            height: '8px',
-            backgroundColor: 'var(--accent-current)',
-          }}
-          initial={prefersReducedMotion ? false : { scale: 0 }}
-          animate={hasBeenInView ? { scale: 1 } : {}}
-          transition={{ duration: 0.3, delay: 0.15, type: 'spring', stiffness: 300 }}
-        />
-        {/* Vertical line */}
-        {!isLast && (
-          <motion.div
-            style={{
-              width: '1px',
-              height: '48px',
-              backgroundColor: 'var(--line)',
-              transformOrigin: 'top',
-            }}
-            initial={prefersReducedMotion ? false : { scaleY: 0 }}
-            animate={hasBeenInView ? { scaleY: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          />
-        )}
-      </div>
-
-      {/* Content */}
-      <motion.div
-        className="flex-1 pb-10"
-        initial={
-          prefersReducedMotion
-            ? false
-            : { opacity: 0, x: isEven ? -20 : 20 }
-        }
-        animate={hasBeenInView ? { opacity: 1, x: 0 } : {}}
-        transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-      >
-        <h3
-          className="font-display text-lg md:text-xl mb-1"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          {entry.role}
-        </h3>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          {entry.description}
-        </p>
-      </motion.div>
-    </div>
-  );
-}
 
 export default function About() {
   const sectionRef = useRef(null);
+  const trailingRef = useRef(null);
   const { hasBeenInView } = useInView(sectionRef, { threshold: 0.1 });
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <SectionWrapper id="about" label="About" className="relative">
@@ -96,28 +28,28 @@ export default function About() {
         {/* Section indicator */}
         <motion.div
           className="mb-16"
-          initial={{ opacity: 0 }}
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={hasBeenInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5 }}
         >
-          <MetadataLabel>02 / 05 — About</MetadataLabel>
+          <MetadataLabel>02 / 06 — About</MetadataLabel>
         </motion.div>
 
-        {/* Heading — burst reveal for chaos → composition effect */}
+        {/* Heading — scatter: controlled chaos → order */}
         <div className="mb-12">
           <TextReveal
             text="Building modern digital experiences with clean and scalable solutions."
             tag="h2"
             className="text-display leading-tight"
-            style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)' }}
-            mode="burst"
-            staggerChildren={0.04}
+            mode="scatter"
+            staggerChildren={0.02}
           />
         </div>
 
         <FineRule className="mb-12" delay={0.3} />
 
-        {/* About paragraphs — staggered slide-up */}
+        {/* About paragraphs — first two use scatter for the information dump,
+            remaining use slide-up for contrast/pacing */}
         <div className="space-y-6 mb-20 max-w-2xl">
           {personal.about.map((paragraph, i) => (
             <TextReveal
@@ -125,15 +57,15 @@ export default function About() {
               text={paragraph}
               tag="p"
               className="text-base leading-relaxed"
-              mode="slide-up"
-              delay={0.15 * i + 0.2}
-              staggerChildren={0.015}
+              mode={i < 2 ? 'scatter' : 'slide-up'}
+              delay={0.1 * i + 0.15}
+              staggerChildren={i < 2 ? 0.02 : 0.015}
             />
           ))}
         </div>
 
         {/* Development approach */}
-        <div className="mb-20">
+        <div className="mb-16">
           <MetadataLabel className="mb-4 block">Development Approach</MetadataLabel>
           <TextReveal
             text={personal.focus}
@@ -141,25 +73,85 @@ export default function About() {
             className="text-base leading-relaxed"
             mode="cascade"
             delay={0.3}
-            style={{ color: 'var(--text-secondary)' }}
           />
         </div>
 
-        <FineRule className="mb-16" delay={0.4} />
+        <FineRule className="mb-8" delay={0.4} />
 
-        {/* Timeline */}
-        <div className="mb-8">
-          <MetadataLabel className="mb-10 block">Timeline</MetadataLabel>
-          <div>
-            {timeline.map((entry, i) => (
-              <TimelineEntry
-                key={`${entry.year}-${entry.role}`}
-                entry={entry}
-                index={i}
-                isLast={i === timeline.length - 1}
-              />
-            ))}
-          </div>
+        {/* Trailing visual elements — lines that extend toward Skills,
+            creating visual continuity. These are structural,
+            not generic decoration. */}
+        <div
+          ref={trailingRef}
+          className="relative overflow-hidden"
+          style={{ height: '80px' }}
+          aria-hidden="true"
+        >
+          {/* Converging lines that hint at the Skills constellation structure */}
+          <motion.div
+            className="absolute"
+            style={{
+              left: '10%',
+              top: '20%',
+              width: '30%',
+              height: '1px',
+              backgroundColor: 'var(--line)',
+              transformOrigin: 'left',
+            }}
+            initial={prefersReducedMotion ? false : { scaleX: 0 }}
+            animate={hasBeenInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.8, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+          />
+          <motion.div
+            className="absolute"
+            style={{
+              right: '15%',
+              top: '50%',
+              width: '25%',
+              height: '1px',
+              backgroundColor: 'var(--accent-current)',
+              opacity: 0.3,
+              transformOrigin: 'right',
+            }}
+            initial={prefersReducedMotion ? false : { scaleX: 0 }}
+            animate={hasBeenInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.8, delay: 1.0, ease: [0.25, 0.1, 0.25, 1] }}
+          />
+          <motion.div
+            className="absolute"
+            style={{
+              left: '40%',
+              top: '75%',
+              width: '20%',
+              height: '1px',
+              backgroundColor: 'var(--line)',
+              transformOrigin: 'center',
+            }}
+            initial={prefersReducedMotion ? false : { scaleX: 0 }}
+            animate={hasBeenInView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.6, delay: 1.1, ease: [0.25, 0.1, 0.25, 1] }}
+          />
+          {/* Small nodes at line endpoints — precursors to the Skills constellation */}
+          {[
+            { left: '40%', top: '20%' },
+            { left: '60%', top: '50%' },
+            { left: '60%', top: '75%' },
+          ].map((pos, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                ...pos,
+                width: '4px',
+                height: '4px',
+                backgroundColor: 'var(--accent-current)',
+                opacity: 0.4,
+              }}
+              initial={prefersReducedMotion ? false : { scale: 0 }}
+              animate={hasBeenInView ? { scale: 1 } : {}}
+              transition={{ delay: 1.2 + i * 0.1, type: 'spring', stiffness: 200 }}
+            />
+          ))}
         </div>
       </div>
     </SectionWrapper>

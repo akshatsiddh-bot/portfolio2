@@ -311,7 +311,7 @@ export default function Skills() {
     <SectionWrapper id="skills" label="Skills">
       {/* Section indicator */}
       <div className="mb-12">
-        <MetadataLabel>03 / 05 — Skills</MetadataLabel>
+        <MetadataLabel>03 / 06 — Skills</MetadataLabel>
       </div>
 
       <div className="mb-8">

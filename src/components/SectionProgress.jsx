@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useColor } from '../systems/ColorProvider';
 
-const SECTION_NAMES = ['HERO', 'ABOUT', 'SKILLS', 'PROJECTS', 'CONTACT'];
+const SECTION_NAMES = ['HERO', 'ABOUT', 'SKILLS', 'PROJECTS', 'EXPERIENCE', 'CONTACT'];
 const TOTAL = SECTION_NAMES.length;
 
 export default function SectionProgress() {
@@ -13,7 +13,6 @@ export default function SectionProgress() {
       className="fixed bottom-8 left-8 z-50 hidden md:flex items-center gap-3"
       aria-hidden="true"
     >
-      {/* Section number with transition */}
       <div className="flex items-baseline gap-1 overflow-hidden">
         <AnimatePresence mode="popLayout">
           <motion.span
@@ -33,7 +32,6 @@ export default function SectionProgress() {
         </span>
       </div>
 
-      {/* Section name that briefly appears */}
       <AnimatePresence mode="popLayout">
         <motion.span
           key={SECTION_NAMES[activeSection]}
@@ -48,7 +46,6 @@ export default function SectionProgress() {
         </motion.span>
       </AnimatePresence>
 
-      {/* Progress dots */}
       <div className="flex gap-1.5 ml-2">
         {SECTION_NAMES.map((_, i) => (
           <div

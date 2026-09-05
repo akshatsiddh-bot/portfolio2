@@ -3,17 +3,18 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ColorProvider } from './systems/ColorProvider';
 import SectionProgress from './components/SectionProgress';
+import CustomCursor from './components/CustomCursor';
 import Hero from './sections/Hero';
 import About from './sections/About';
 import Skills from './sections/Skills';
 import Projects from './sections/Projects';
+import Experience from './sections/Experience';
 import Contact from './sections/Contact';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   useEffect(() => {
-    // Let all sections mount, then refresh ScrollTrigger
     const timeout = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 100);
@@ -39,6 +40,7 @@ export default function App() {
         Skip to content
       </a>
 
+      <CustomCursor />
       <SectionProgress />
 
       <main>
@@ -46,6 +48,7 @@ export default function App() {
         <About />
         <Skills />
         <Projects />
+        <Experience />
         <Contact />
       </main>
     </ColorProvider>

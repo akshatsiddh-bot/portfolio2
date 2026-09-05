@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ──────────────────────────────────────────────
    HERO — Entering the Experience
+   01 / 06
    ────────────────────────────────────────────── */
 
 const letterVariants = {
@@ -41,6 +42,7 @@ export default function Hero() {
   const metaRef = useRef(null);
   const scrollRef = useRef(null);
   const linesRef = useRef(null);
+  const roleRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -51,7 +53,10 @@ export default function Hero() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  /* GSAP scroll-driven transformation: Hero → About */
+  /* GSAP scroll-driven transformation: Hero → About
+     Hero elements physically migrate — name words split and fade to ghost traces,
+     metadata migrates downward toward About's indicator position,
+     decorative lines extend as structural bridges. */
   useEffect(() => {
     if (prefersReducedMotion || isMobile) return;
 
@@ -67,42 +72,70 @@ export default function Hero() {
         },
       });
 
-      // Phase 1: Name splits apart
+      // Phase 1 (0–0.35): Name splits apart, words drift independently
       tl.to(
         nameFirstRef.current,
-        { x: '-12vw', y: '-8vh', scale: 0.7, opacity: 0.15, duration: 0.4 },
+        { x: '-15vw', y: '-10vh', scale: 0.65, opacity: 0.08, duration: 0.35 },
         0
       )
-        .to(
-          nameLastRef.current,
-          { x: '10vw', y: '6vh', scale: 0.7, opacity: 0.15, duration: 0.4 },
-          0
-        )
-        // Phase 2: Metadata fades, lines grow
-        .to(metaRef.current, { opacity: 0, y: -20, duration: 0.2 }, 0)
-        .to(scrollRef.current, { opacity: 0, duration: 0.15 }, 0)
-        .fromTo(
-          linesRef.current?.children || [],
-          { scaleX: 0 },
-          { scaleX: 1, stagger: 0.05, duration: 0.3 },
-          0.2
-        )
-        // Phase 3: Everything clears
-        .to(
-          nameFirstRef.current,
-          { opacity: 0, x: '-20vw', duration: 0.3 },
-          0.5
-        )
-        .to(
-          nameLastRef.current,
-          { opacity: 0, x: '18vw', duration: 0.3 },
-          0.5
-        )
-        .to(
-          linesRef.current?.children || [],
-          { opacity: 0, duration: 0.2 },
-          0.7
-        );
+      .to(
+        nameLastRef.current,
+        { x: '12vw', y: '8vh', scale: 0.65, opacity: 0.08, duration: 0.35 },
+        0
+      )
+
+      // Phase 2 (0–0.25): Metadata migrates downward toward About area
+      .to(
+        roleRef.current,
+        { y: '30vh', x: '-30vw', scale: 0.85, opacity: 0.6, duration: 0.35 },
+        0
+      )
+      .to(metaRef.current, { opacity: 0, y: 40, duration: 0.2 }, 0)
+      .to(scrollRef.current, { opacity: 0, duration: 0.12 }, 0)
+
+      // Phase 3 (0.2–0.6): Decorative lines grow — structural bridges to About
+      .fromTo(
+        linesRef.current?.children || [],
+        { scaleX: 0 },
+        { scaleX: 1, stagger: 0.04, duration: 0.3 },
+        0.2
+      )
+
+      // Phase 4 (0.5–0.8): Ghost traces of name remain briefly
+      .to(
+        nameFirstRef.current,
+        { x: '-22vw', y: '-15vh', opacity: 0.03, duration: 0.3 },
+        0.5
+      )
+      .to(
+        nameLastRef.current,
+        { x: '20vw', y: '12vh', opacity: 0.03, duration: 0.3 },
+        0.5
+      )
+
+      // Phase 5 (0.6–1.0): Role label settles at About indicator position
+      .to(
+        roleRef.current,
+        { opacity: 0, duration: 0.2 },
+        0.6
+      )
+      // Lines extend and fade
+      .to(
+        linesRef.current?.children || [],
+        { opacity: 0, scaleX: 1.5, duration: 0.3, stagger: 0.03 },
+        0.7
+      )
+      // Final clear
+      .to(
+        nameFirstRef.current,
+        { opacity: 0, duration: 0.15 },
+        0.85
+      )
+      .to(
+        nameLastRef.current,
+        { opacity: 0, duration: 0.15 },
+        0.85
+      );
     }, heroRef);
 
     return () => ctx.revert();
@@ -122,7 +155,7 @@ export default function Hero() {
     >
       {/* Section indicator */}
       <div className="absolute top-8 left-8">
-        <MetadataLabel>01 / 05</MetadataLabel>
+        <MetadataLabel>01 / 06</MetadataLabel>
       </div>
 
       {/* Main content */}
@@ -169,9 +202,10 @@ export default function Hero() {
           </span>
         </h1>
 
-        {/* Metadata */}
-        <div ref={metaRef} className="mt-8 space-y-3">
+        {/* Metadata — role migrates during transformation */}
+        <div className="mt-8 space-y-3">
           <motion.div
+            ref={roleRef}
             custom={0.6}
             initial={prefersReducedMotion ? false : 'hidden'}
             animate="visible"
@@ -180,6 +214,7 @@ export default function Hero() {
             <MetadataLabel>{personal.role}</MetadataLabel>
           </motion.div>
           <motion.div
+            ref={metaRef}
             custom={0.75}
             initial={prefersReducedMotion ? false : 'hidden'}
             animate="visible"
@@ -192,15 +227,16 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Decorative lines (for scroll transformation) */}
+      {/* Decorative lines — structural bridges that extend toward About */}
       <div
         ref={linesRef}
         className="absolute inset-0 pointer-events-none"
         aria-hidden="true"
       >
         <div
-          className="absolute top-1/3 left-0 w-full"
+          className="absolute left-0 w-full"
           style={{
+            top: '33%',
             height: '1px',
             backgroundColor: 'var(--line)',
             transformOrigin: 'left',
@@ -208,21 +244,23 @@ export default function Hero() {
           }}
         />
         <div
-          className="absolute top-2/3 left-0 w-full"
+          className="absolute left-0 w-full"
           style={{
+            top: '50%',
             height: '1px',
-            backgroundColor: 'var(--line)',
-            transformOrigin: 'right',
+            backgroundColor: 'var(--accent-current)',
+            opacity: 0.35,
+            transformOrigin: 'center',
             transform: 'scaleX(0)',
           }}
         />
         <div
-          className="absolute top-1/2 left-0 w-full"
+          className="absolute left-0 w-full"
           style={{
+            top: '67%',
             height: '1px',
-            backgroundColor: 'var(--accent-current)',
-            opacity: 0.4,
-            transformOrigin: 'center',
+            backgroundColor: 'var(--line)',
+            transformOrigin: 'right',
             transform: 'scaleX(0)',
           }}
         />

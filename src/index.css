@@ -206,3 +206,15 @@ body::after {
 .pin-spacer {
   /* Prevent layout shifts from GSAP pin spacers */
 }
+
+/* ============================================
+   CUSTOM CURSOR — hide default on desktop
+   ============================================ */
+@media (pointer: fine) and (hover: hover) {
+  html,
+  html *,
+  html a,
+  html button {
+    cursor: none !important;
+  }
+}
