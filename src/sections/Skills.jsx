@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useInView } from '../systems/useInView';
-import { useReducedMotion } from '../systems/useReducedMotion';
-import SectionWrapper from '../components/SectionWrapper';
-import MetadataLabel from '../components/MetadataLabel';
-import { skills, connections, CATEGORIES } from '../data/skills';
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "../systems/useInView";
+import { useReducedMotion } from "../systems/useReducedMotion";
+import SectionWrapper from "../components/SectionWrapper";
+import MetadataLabel from "../components/MetadataLabel";
+import { skills, connections, CATEGORIES } from "../data/skills";
 
 /* ──────────────────────────────────────────────
    SKILLS — Interactive Technical Constellation
@@ -22,8 +22,8 @@ function calculatePositions(width, height) {
     backend: { x: 160 * scale, y: 320 * scale },
     databases: { x: 820 * scale, y: 300 * scale },
     devops: { x: 180 * scale, y: 500 * scale },
-    tools: { x: 500 * scale, y: 480 * scale },
-    testing: { x: 820 * scale, y: 500 * scale },
+    tools: { x: 820 * scale, y: 500 * scale },
+    // testing: { x: 820 * scale, y: 500 * scale },
   };
 
   const positions = {};
@@ -43,8 +43,8 @@ function calculatePositions(width, height) {
 
     catSkills.forEach((skill, i) => {
       const angle = (i / catSkills.length) * Math.PI * 2 - Math.PI / 2;
-      const jitterX = (Math.sin(i * 7.3) * 8) * scale;
-      const jitterY = (Math.cos(i * 5.1) * 8) * scale;
+      const jitterX = Math.sin(i * 7.3) * 8 * scale;
+      const jitterY = Math.cos(i * 5.1) * 8 * scale;
       positions[skill.id] = {
         x: center.x + Math.cos(angle) * radius + jitterX,
         y: center.y + Math.sin(angle) * radius + jitterY,
@@ -94,10 +94,10 @@ function SkillsGrid() {
                       backgroundColor: isActive
                         ? cat.color
                         : isConnected
-                        ? `${cat.color}22`
-                        : 'transparent',
-                      color: isActive ? '#F5F0EB' : 'var(--text-secondary)',
-                      border: `1px solid ${isActive || isConnected ? cat.color : 'var(--line)'}`,
+                          ? `${cat.color}22`
+                          : "transparent",
+                      color: isActive ? "#F5F0EB" : "var(--text-secondary)",
+                      border: `1px solid ${isActive || isConnected ? cat.color : "var(--line)"}`,
                       opacity: isDimmed ? 0.35 : 1,
                     }}
                     whileTap={{ scale: 0.96 }}
@@ -115,8 +115,18 @@ function SkillsGrid() {
 }
 
 const SELECTED_NODES = new Set([
-  'javascript', 'react', 'typescript', 'nodejs', 'express',
-  'mongodb', 'sql', 'docker', 'aws', 'git', 'jest', 'tailwind'
+  "javascript",
+  "react",
+  "typescript",
+  "nodejs",
+  "express",
+  "mongodb",
+  "sql",
+  "docker",
+  "aws",
+  "git",
+  "jest",
+  "tailwind",
 ]);
 
 function SkillsConstellation() {
@@ -132,14 +142,14 @@ function SkillsConstellation() {
 
   const { positions, centers } = useMemo(
     () => calculatePositions(1000, 600),
-    []
+    [],
   );
 
   const connectedSet = hoveredSkill ? getConnected(hoveredSkill) : new Set();
 
   const getCategoryColor = useCallback(
-    (catId) => CATEGORIES.find((c) => c.id === catId)?.color || '#9B8E85',
-    []
+    (catId) => CATEGORIES.find((c) => c.id === catId)?.color || "#9B8E85",
+    [],
   );
 
   const shouldShow = hasAnimated || prefersReducedMotion;
@@ -147,20 +157,29 @@ function SkillsConstellation() {
   return (
     <div className="relative">
       {/* Interaction cue */}
-      <div className="flex items-center gap-2 mb-4 text-meta" style={{ opacity: 0.8 }}>
+      <div
+        className="flex items-center gap-2 mb-4 text-meta"
+        style={{ opacity: 0.8 }}
+      >
         <span
           className="inline-block rounded-full animate-pulse"
-          style={{ width: '6px', height: '6px', backgroundColor: 'var(--accent-current)' }}
+          style={{
+            width: "6px",
+            height: "6px",
+            backgroundColor: "var(--accent-current)",
+          }}
           aria-hidden="true"
         />
-        <span>Interactive Constellation · Hover nodes to trace connections</span>
+        <span>
+          Interactive Constellation · Hover nodes to trace connections
+        </span>
       </div>
 
       <svg
         ref={svgRef}
         viewBox="0 0 1000 600"
         className="w-full h-auto"
-        style={{ maxHeight: '70vh' }}
+        style={{ maxHeight: "70vh" }}
         role="img"
         aria-label="Skills constellation — interactive visualization of technical skills"
       >
@@ -181,11 +200,13 @@ function SkillsConstellation() {
               y1={posA.y}
               x2={posB.x}
               y2={posB.y}
-              stroke={isHighlighted ? 'var(--accent-current)' : 'var(--line)'}
+              stroke={isHighlighted ? "var(--accent-current)" : "var(--line)"}
               strokeWidth={isHighlighted ? 1.5 : 0.5}
-              strokeDasharray={isHighlighted ? 'none' : '2 2'}
+              strokeDasharray={isHighlighted ? "none" : "2 2"}
               initial={
-                prefersReducedMotion ? { opacity: isDimmed ? 0.05 : 0.18 } : { pathLength: 0, opacity: 0 }
+                prefersReducedMotion
+                  ? { opacity: isDimmed ? 0.05 : 0.18 }
+                  : { pathLength: 0, opacity: 0 }
               }
               animate={
                 shouldShow
@@ -218,7 +239,7 @@ function SkillsConstellation() {
               fontFamily="Inter, sans-serif"
               fontWeight={500}
               letterSpacing="0.1em"
-              style={{ textTransform: 'uppercase' }}
+              style={{ textTransform: "uppercase" }}
               initial={prefersReducedMotion ? {} : { opacity: 0 }}
               animate={shouldShow ? { opacity: 0.6 } : {}}
               transition={{ duration: 0.5, delay: 0.5 }}
@@ -244,9 +265,12 @@ function SkillsConstellation() {
               key={skill.id}
               onMouseEnter={() => setHoveredSkill(skill.id)}
               onMouseLeave={() => setHoveredSkill(null)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
               animate={
-                shouldShow && isSelected && !hoveredSkill && !prefersReducedMotion
+                shouldShow &&
+                isSelected &&
+                !hoveredSkill &&
+                !prefersReducedMotion
                   ? {
                       y: [0, i % 2 === 0 ? -1.5 : 1.5, 0],
                       x: [0, i % 3 === 0 ? 1 : -1, 0],
@@ -258,7 +282,7 @@ function SkillsConstellation() {
                   ? {
                       duration: 5.5 + (i % 3) * 0.8,
                       repeat: Infinity,
-                      ease: 'easeInOut',
+                      ease: "easeInOut",
                       delay: (i % 4) * 0.5,
                     }
                   : { duration: 0.2 }
@@ -277,25 +301,28 @@ function SkillsConstellation() {
                         scale: isHovered
                           ? 1.25
                           : isConnected
-                          ? 1.15
-                          : isSelected && !hoveredSkill && !prefersReducedMotion
-                          ? [1, 1.12, 1]
-                          : 1,
+                            ? 1.15
+                            : isSelected &&
+                                !hoveredSkill &&
+                                !prefersReducedMotion
+                              ? [1, 1.12, 1]
+                              : 1,
                         opacity: isDimmed ? 0.2 : 1,
                       }
                     : {}
                 }
                 transition={{
-                  scale: isHovered || isConnected
-                    ? { duration: 0.2 }
-                    : isSelected && !hoveredSkill
-                    ? {
-                        duration: 4.8 + (i % 3) * 0.6,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                        delay: (i % 4) * 0.4,
-                      }
-                    : { duration: 0.2 },
+                  scale:
+                    isHovered || isConnected
+                      ? { duration: 0.2 }
+                      : isSelected && !hoveredSkill
+                        ? {
+                            duration: 4.8 + (i % 3) * 0.6,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: (i % 4) * 0.4,
+                          }
+                        : { duration: 0.2 },
                   opacity: { duration: 0.2 },
                 }}
               />
@@ -320,7 +347,9 @@ function SkillsConstellation() {
                 x={pos.x}
                 y={pos.y + (isHovered ? -14 : 16)}
                 textAnchor="middle"
-                fill={isHovered ? 'var(--text-primary)' : 'var(--text-secondary)'}
+                fill={
+                  isHovered ? "var(--text-primary)" : "var(--text-secondary)"
+                }
                 fontSize={isHovered ? 12 : 9}
                 fontFamily="Inter, sans-serif"
                 fontWeight={isHovered ? 600 : 400}
@@ -349,8 +378,8 @@ export default function Skills() {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   return (
@@ -363,11 +392,14 @@ export default function Skills() {
       <div className="mb-8">
         <h2
           className="text-display mb-4"
-          style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)' }}
+          style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}
         >
           Tools & technologies I use.
         </h2>
-        <p className="text-sm leading-relaxed max-w-xl" style={{ color: 'var(--text-secondary)' }}>
+        <p
+          className="text-sm leading-relaxed max-w-xl"
+          style={{ color: "var(--text-secondary)" }}
+        >
           I work across frontend, backend, databases, and development tools to
           build responsive, scalable, and user-focused web applications.
         </p>

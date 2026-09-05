@@ -35,7 +35,10 @@ export default function About() {
         </motion.div>
 
         {/* Heading */}
-        <div className="mb-12">
+        <div
+          className="mb-12"
+          style={{ fontSize: "clamp(0.5rem, 2.5vw, 1.5rem)" }}
+        >
           <TextReveal
             text="Building modern digital experiences with clean and scalable solutions."
             tag="h2"
@@ -48,7 +51,10 @@ export default function About() {
         <FineRule className="mb-12" delay={0.3} />
 
         {/* About paragraphs — clean editorial reveal */}
-        <div className="space-y-6 mb-20 max-w-2xl">
+        <div
+          className="space-y-6 mb-20 max-w-2xl text-sm leading-relaxed "
+          style={{ color: "var(--text-secondary)" }}
+        >
           {personal.about.map((paragraph, i) => (
             <TextReveal
               key={i}
@@ -70,7 +76,8 @@ export default function About() {
           <TextReveal
             text={personal.focus}
             tag="p"
-            className="text-base leading-relaxed"
+            className="text-base leading-relaxed max-w-xl"
+            style={{ color: "var(--text-secondary)" }}
             mode="slide-up"
             delay={0.3}
             asParagraph

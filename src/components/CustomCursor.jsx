@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useReducedMotion } from '../systems/useReducedMotion';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useReducedMotion } from "../systems/useReducedMotion";
 
 /*
  * CustomCursor — one translucent, blurred, background-aware cursor.
@@ -24,22 +24,22 @@ export default function CustomCursor() {
   const targetRef = useRef({ x: -100, y: -100 });
   const rafRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
-  const [variant, setVariant] = useState('default');
-  const [label, setLabel] = useState('');
+  const [variant, setVariant] = useState("default");
+  const [label, setLabel] = useState("");
   const [isVisible, setIsVisible] = useState(false);
 
   // Detect touch device
-  const isTouch = typeof window !== 'undefined' &&
-    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  const isTouch =
+    typeof window !== "undefined" &&
+    ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
   const updatePosition = useCallback(() => {
-    const lerp = 0.15;
+    const lerp = 0.11;
     posRef.current.x += (targetRef.current.x - posRef.current.x) * lerp;
     posRef.current.y += (targetRef.current.y - posRef.current.y) * lerp;
 
     if (cursorRef.current) {
-      cursorRef.current.style.transform =
-        `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`;
+      cursorRef.current.style.transform = `translate3d(${posRef.current.x}px, ${posRef.current.y}px, 0)`;
     }
 
     rafRef.current = requestAnimationFrame(updatePosition);
@@ -59,32 +59,32 @@ export default function CustomCursor() {
 
     // Detect cursor state from data-cursor attributes
     const onMouseOver = (e) => {
-      const target = e.target.closest('[data-cursor]');
+      const target = e.target.closest("[data-cursor]");
       if (target) {
-        const cursorType = target.getAttribute('data-cursor');
-        setVariant(cursorType || 'default');
-        setLabel(target.getAttribute('data-cursor-label') || '');
+        const cursorType = target.getAttribute("data-cursor");
+        setVariant(cursorType || "default");
+        setLabel(target.getAttribute("data-cursor-label") || "");
       } else if (e.target.closest('a, button, [role="button"]')) {
-        setVariant('link');
-        setLabel('');
+        setVariant("link");
+        setLabel("");
       } else {
-        setVariant('default');
-        setLabel('');
+        setVariant("default");
+        setLabel("");
       }
     };
 
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    document.addEventListener('mouseover', onMouseOver, { passive: true });
-    document.addEventListener('mouseleave', onMouseLeave);
-    document.addEventListener('mouseenter', onMouseEnter);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mouseover", onMouseOver, { passive: true });
+    document.addEventListener("mouseleave", onMouseLeave);
+    document.addEventListener("mouseenter", onMouseEnter);
 
     rafRef.current = requestAnimationFrame(updatePosition);
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseover', onMouseOver);
-      document.removeEventListener('mouseleave', onMouseLeave);
-      document.removeEventListener('mouseenter', onMouseEnter);
+      window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseover", onMouseOver);
+      document.removeEventListener("mouseleave", onMouseLeave);
+      document.removeEventListener("mouseenter", onMouseEnter);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [isTouch, prefersReducedMotion, isVisible, updatePosition]);
@@ -92,7 +92,7 @@ export default function CustomCursor() {
   // Don't render on touch or reduced motion
   if (isTouch || prefersReducedMotion) return null;
 
-  const hasLabel = variant === 'project' || variant === 'copy';
+  const hasLabel = variant === "project" || variant === "copy";
 
   return (
     <div
@@ -100,8 +100,8 @@ export default function CustomCursor() {
       className="fixed top-0 left-0 pointer-events-none"
       style={{
         zIndex: 99999,
-        willChange: 'transform',
-        transform: 'translate3d(-100px, -100px, 0)',
+        willChange: "transform",
+        transform: "translate3d(-100px, -100px, 0)",
       }}
     >
       <AnimatePresence mode="wait">
@@ -120,34 +120,34 @@ export default function CustomCursor() {
             }}
             exit={{ scale: 0.7, opacity: 0 }}
             transition={{
-              type: 'spring',
+              type: "spring",
               stiffness: 450,
               damping: 30,
             }}
             style={{
-              borderRadius: '6px',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              borderRadius: "6px",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
               backgroundColor:
-                'color-mix(in srgb, var(--accent-current) 14%, var(--bg-current) 22%)',
+                "color-mix(in srgb, var(--accent-current) 14%, var(--bg-current) 22%)",
               border:
-                '1px solid color-mix(in srgb, var(--accent-current) 26%, transparent)',
+                "1px solid color-mix(in srgb, var(--accent-current) 26%, transparent)",
               boxShadow:
-                '0 2px 8px color-mix(in srgb, var(--accent-current) 10%, transparent)',
+                "0 2px 8px color-mix(in srgb, var(--accent-current) 10%, transparent)",
             }}
             className="flex items-center justify-center"
           >
             <span
               style={{
-                fontSize: '8.5px',
+                fontSize: "8.5px",
                 fontWeight: 600,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--text-primary)',
-                whiteSpace: 'nowrap',
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--text-primary)",
+                whiteSpace: "nowrap",
               }}
             >
-              {label || (variant === 'project' ? 'VIEW' : 'COPY')}
+              {label || (variant === "project" ? "VIEW" : "COPY")}
             </span>
           </motion.div>
         ) : (
@@ -157,18 +157,18 @@ export default function CustomCursor() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{
               opacity: isVisible ? 1 : 0,
-              scale: variant === 'link' ? 1.18 : 1,
+              scale: variant === "link" ? 1.18 : 1,
               x: 0,
               y: 0,
             }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{
-              scale: { type: 'spring', stiffness: 450, damping: 28 },
+              scale: { type: "spring", stiffness: 450, damping: 28 },
               opacity: { duration: 0.15 },
             }}
             style={{
               filter:
-                'drop-shadow(0 2px 5px color-mix(in srgb, var(--accent-current) 20%, rgba(0,0,0,0.12)))',
+                "drop-shadow(0 2px 5px color-mix(in srgb, var(--accent-current) 20%, rgba(0,0,0,0.12)))",
             }}
           >
             <svg
@@ -178,8 +178,8 @@ export default function CustomCursor() {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               style={{
-                display: 'block',
-                transform: 'translate(-2px, -2px)',
+                display: "block",
+                transform: "translate(-2px, -2px)",
               }}
             >
               {/* Pointing arrow geometry with tip at (2.5, 1.5) */}
@@ -191,7 +191,7 @@ export default function CustomCursor() {
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 style={{
-                  backdropFilter: 'blur(8px)',
+                  backdropFilter: "blur(8px)",
                 }}
               />
             </svg>

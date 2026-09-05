@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -137,11 +137,141 @@ function ProjectCard({ project }) {
       transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
     >
       <ProjectContent project={project} />
+
       {/* Show visual below on mobile */}
       <div className="mt-8 flex justify-center p-6 rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--accent-current)_4%,transparent)]">
         <ProjectVisual projectId={project.id} />
       </div>
     </motion.article>
+  );
+}
+
+/* ── Magnetic GitHub Button ── */
+function MagneticGithubButton() {
+  const buttonRef = useRef(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (prefersReducedMotion || !buttonRef.current) return;
+
+      const rect = buttonRef.current.getBoundingClientRect();
+
+      const x = e.clientX - (rect.left + rect.width / 2);
+      const y = e.clientY - (rect.top + rect.height / 2);
+
+      // Keep the magnetic movement subtle.
+      const strength = 0.16;
+
+      gsap.to(buttonRef.current, {
+        x: x * strength,
+        y: y * strength,
+        duration: 0.35,
+        ease: "power3.out",
+        overwrite: true,
+      });
+    },
+    [prefersReducedMotion],
+  );
+
+  const handleMouseEnter = useCallback(() => {
+    if (prefersReducedMotion || !buttonRef.current) return;
+
+    gsap.to(buttonRef.current, {
+      scale: 1.04,
+      duration: 0.3,
+      ease: "power2.out",
+      overwrite: true,
+    });
+  }, [prefersReducedMotion]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!buttonRef.current) return;
+
+    gsap.to(buttonRef.current, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      duration: 0.6,
+      ease: "elastic.out(1, 0.45)",
+      overwrite: true,
+    });
+  }, []);
+
+  return (
+    <div className="flex justify-center px-4">
+      <a
+        ref={buttonRef}
+        href="https://github.com/akshatsiddh-bot"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View more projects on GitHub"
+        data-cursor="link"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="
+          group
+          inline-flex
+          min-h-[48px]
+          items-center
+          justify-center
+          gap-3
+          rounded-full
+          border
+          px-7
+          py-3.5
+          text-sm
+          font-medium
+          touch-manipulation
+          transition-colors
+          duration-300
+          md:px-8
+        "
+        style={{
+          borderColor: "var(--line)",
+          color: "var(--text-primary)",
+          WebkitTapHighlightColor: "transparent",
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.backgroundColor = "var(--accent-current)";
+          e.currentTarget.style.color = "#F5F0EB";
+          e.currentTarget.style.borderColor = "var(--accent-current)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.backgroundColor = "transparent";
+          e.currentTarget.style.color = "var(--text-primary)";
+          e.currentTarget.style.borderColor = "var(--line)";
+        }}
+        onClick={(e) => {
+          // Reset any magnetic transform before navigation.
+          if (buttonRef.current && !prefersReducedMotion) {
+            gsap.to(buttonRef.current, {
+              x: 0,
+              y: 0,
+              scale: 1,
+              duration: 0.2,
+              ease: "power2.out",
+            });
+          }
+        }}
+      >
+        <span>View More Projects</span>
+
+        <span
+          className="
+            inline-block
+            transition-transform
+            duration-300
+            group-hover:translate-x-1
+            group-hover:-translate-y-1
+          "
+          aria-hidden="true"
+        >
+          ↗
+        </span>
+      </a>
+    </div>
   );
 }
 
@@ -155,8 +285,11 @@ export default function Projects() {
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
+
     check();
+
     window.addEventListener("resize", check);
+
     return () => window.removeEventListener("resize", check);
   }, []);
 
@@ -168,12 +301,20 @@ export default function Projects() {
     if (prefersReducedMotion || isMobile || !pinnedRef.current) return;
 
     const projectEls = pinnedRef.current.querySelectorAll(".project-slide");
+
     if (projectEls.length === 0) return;
 
     const ctx = gsap.context(() => {
       // Initial state: first visible, rest hidden
-      gsap.set(projectEls, { opacity: 0, visibility: "hidden" });
-      gsap.set(projectEls[0], { opacity: 1, visibility: "visible" });
+      gsap.set(projectEls, {
+        opacity: 0,
+        visibility: "hidden",
+      });
+
+      gsap.set(projectEls[0], {
+        opacity: 1,
+        visibility: "visible",
+      });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -183,11 +324,13 @@ export default function Projects() {
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
+
           onUpdate: (self) => {
             const idx = Math.min(
               Math.floor(self.progress * projects.length),
               projects.length - 1,
             );
+
             setActiveProject(idx);
           },
         },
@@ -288,8 +431,6 @@ export default function Projects() {
             `${label}+=0.08`,
           )
 
-          // Visual gets slightly more time so the transition
-          // feels like a visual system changing rather than disappearing.
           .to(
             currVisual,
             {
@@ -455,12 +596,14 @@ export default function Projects() {
         <div className="mb-6">
           <MetadataLabel>04 / 06 — Projects</MetadataLabel>
         </div>
+
         <h2
           className="text-display mb-4"
           style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.5rem)" }}
         >
           Selected work.
         </h2>
+
         <p
           className="text-sm max-w-xl mb-12"
           style={{ color: "var(--text-secondary)" }}
@@ -514,7 +657,9 @@ export default function Projects() {
               {projects.map((project, i) => (
                 <div
                   key={project.id}
-                  className={`project-slide ${i === 0 ? "" : "absolute inset-0"}`}
+                  className={`project-slide ${
+                    i === 0 ? "" : "absolute inset-0"
+                  }`}
                   style={i !== 0 ? { top: 0, left: 0 } : {}}
                 >
                   <ProjectContent project={project} isDesktop />
@@ -529,11 +674,17 @@ export default function Projects() {
           {projects.map((project, i) => (
             <div key={project.id}>
               <ProjectCard project={project} />
+
               {i < projects.length - 1 && <FineRule className="my-4" />}
             </div>
           ))}
         </div>
       )}
+
+      {/* View more projects */}
+      <div className="section-container pb-20 md:pb-28">
+        <MagneticGithubButton />
+      </div>
     </section>
   );
 }

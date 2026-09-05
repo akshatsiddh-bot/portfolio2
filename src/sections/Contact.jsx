@@ -1,13 +1,13 @@
-import { useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useInView } from '../systems/useInView';
-import { useReducedMotion } from '../systems/useReducedMotion';
-import SectionWrapper from '../components/SectionWrapper';
-import TextReveal from '../components/TextReveal';
-import MetadataLabel from '../components/MetadataLabel';
-import FineRule from '../components/FineRule';
-import MagneticButton from '../components/MagneticButton';
-import { personal } from '../data/personal';
+import { useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "../systems/useInView";
+import { useReducedMotion } from "../systems/useReducedMotion";
+import SectionWrapper from "../components/SectionWrapper";
+import TextReveal from "../components/TextReveal";
+import MetadataLabel from "../components/MetadataLabel";
+import FineRule from "../components/FineRule";
+import MagneticButton from "../components/MagneticButton";
+import { personal } from "../data/personal";
 
 /* ──────────────────────────────────────────────
    CONTACT — Quiet Confident Ending
@@ -24,11 +24,11 @@ function CopyEmailButton() {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback for older browsers
-      const textarea = document.createElement('textarea');
+      const textarea = document.createElement("textarea");
       textarea.value = personal.email;
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textarea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -43,11 +43,11 @@ function CopyEmailButton() {
         onMouseLeave={() => setIsHovered(false)}
         className="text-lg md:text-xl font-display transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-3"
         data-cursor="copy"
-        data-cursor-label={copied ? 'COPIED' : 'COPY'}
+        data-cursor-label={copied ? "COPIED" : "COPY"}
         style={{
-          color: isHovered ? 'var(--accent-current)' : 'var(--text-primary)',
-          borderBottom: `1px solid ${isHovered ? 'var(--accent-current)' : 'transparent'}`,
-          paddingBottom: '2px',
+          color: isHovered ? "var(--accent-current)" : "var(--text-primary)",
+          borderBottom: `1px solid ${isHovered ? "var(--accent-current)" : "transparent"}`,
+          paddingBottom: "2px",
         }}
         aria-label={`Copy email address: ${personal.email}`}
       >
@@ -58,15 +58,17 @@ function CopyEmailButton() {
       <AnimatePresence mode="wait">
         {isHovered && (
           <motion.span
-            key={copied ? 'copied' : 'copy'}
+            key={copied ? "copied" : "copy"}
             className="absolute -bottom-7 left-0 text-meta"
-            style={{ color: copied ? 'var(--accent-current)' : 'var(--text-tertiary)' }}
+            style={{
+              color: copied ? "var(--accent-current)" : "var(--text-tertiary)",
+            }}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.2 }}
           >
-            {copied ? 'COPIED ✓' : 'CLICK TO COPY'}
+            {copied ? "COPIED ✓" : "CLICK TO COPY"}
           </motion.span>
         )}
       </AnimatePresence>
@@ -103,7 +105,7 @@ export default function Contact() {
     <SectionWrapper id="contact" label="Contact" className="relative">
       <div
         className="flex flex-col items-center justify-center text-center"
-        style={{ minHeight: '80vh' }}
+        style={{ minHeight: "80vh" }}
       >
         {/* Section indicator */}
         <motion.div
@@ -124,9 +126,9 @@ export default function Contact() {
             mode="slide-up"
             staggerChildren={0.03}
             style={{
-              fontSize: 'clamp(2.5rem, 5.8vw, 4.5rem)',
+              fontSize: "clamp(2.5rem, 5.8vw, 4.5rem)",
               lineHeight: 1.12,
-              letterSpacing: '-0.02em',
+              letterSpacing: "-0.02em",
             }}
           />
         </div>
