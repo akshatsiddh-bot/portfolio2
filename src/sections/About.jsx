@@ -1,12 +1,12 @@
-import { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { useInView } from '../systems/useInView';
-import { useReducedMotion } from '../systems/useReducedMotion';
-import SectionWrapper from '../components/SectionWrapper';
-import TextReveal from '../components/TextReveal';
-import MetadataLabel from '../components/MetadataLabel';
-import FineRule from '../components/FineRule';
-import { personal } from '../data/personal';
+import { useRef } from "react";
+import { motion } from "framer-motion";
+import { useInView } from "../systems/useInView";
+import { useReducedMotion } from "../systems/useReducedMotion";
+import SectionWrapper from "../components/SectionWrapper";
+import TextReveal from "../components/TextReveal";
+import MetadataLabel from "../components/MetadataLabel";
+import FineRule from "../components/FineRule";
+import { personal } from "../data/personal";
 
 /* ──────────────────────────────────────────────
    ABOUT
@@ -57,20 +57,23 @@ export default function About() {
               className="text-base leading-relaxed"
               mode="slide-up"
               delay={0.08 * i + 0.1}
-              staggerChildren={0.012}
+              asParagraph
             />
           ))}
         </div>
 
         {/* Development approach */}
         <div className="mb-16">
-          <MetadataLabel className="mb-4 block">Development Approach</MetadataLabel>
+          <MetadataLabel className="mb-4 block">
+            Development Approach
+          </MetadataLabel>
           <TextReveal
             text={personal.focus}
             tag="p"
             className="text-base leading-relaxed"
-            mode="cascade"
+            mode="slide-up"
             delay={0.3}
+            asParagraph
           />
         </div>
 
@@ -82,72 +85,88 @@ export default function About() {
         <div
           ref={trailingRef}
           className="relative overflow-hidden"
-          style={{ height: '80px' }}
+          style={{ height: "80px" }}
           aria-hidden="true"
         >
           {/* Converging lines that hint at the Skills constellation structure */}
           <motion.div
             className="absolute"
             style={{
-              left: '10%',
-              top: '20%',
-              width: '30%',
-              height: '1px',
-              backgroundColor: 'var(--line)',
-              transformOrigin: 'left',
+              left: "10%",
+              top: "20%",
+              width: "30%",
+              height: "1px",
+              backgroundColor: "var(--line)",
+              transformOrigin: "left",
             }}
             initial={prefersReducedMotion ? false : { scaleX: 0 }}
             animate={hasBeenInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 0.8,
+              delay: 0.8,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           />
           <motion.div
             className="absolute"
             style={{
-              right: '15%',
-              top: '50%',
-              width: '25%',
-              height: '1px',
-              backgroundColor: 'var(--accent-current)',
+              right: "15%",
+              top: "50%",
+              width: "25%",
+              height: "1px",
+              backgroundColor: "var(--accent-current)",
               opacity: 0.3,
-              transformOrigin: 'right',
+              transformOrigin: "right",
             }}
             initial={prefersReducedMotion ? false : { scaleX: 0 }}
             animate={hasBeenInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 1.0, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 0.8,
+              delay: 1.0,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           />
           <motion.div
             className="absolute"
             style={{
-              left: '40%',
-              top: '75%',
-              width: '20%',
-              height: '1px',
-              backgroundColor: 'var(--line)',
-              transformOrigin: 'center',
+              left: "40%",
+              top: "75%",
+              width: "20%",
+              height: "1px",
+              backgroundColor: "var(--line)",
+              transformOrigin: "center",
             }}
             initial={prefersReducedMotion ? false : { scaleX: 0 }}
             animate={hasBeenInView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.6, delay: 1.1, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 0.6,
+              delay: 1.1,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           />
           {/* Small nodes at line endpoints — precursors to the Skills constellation */}
           {[
-            { left: '40%', top: '20%' },
-            { left: '60%', top: '50%' },
-            { left: '60%', top: '75%' },
+            { left: "40%", top: "20%" },
+            { left: "60%", top: "50%" },
+            { left: "60%", top: "75%" },
           ].map((pos, i) => (
             <motion.div
               key={i}
               className="absolute rounded-full"
               style={{
                 ...pos,
-                width: '4px',
-                height: '4px',
-                backgroundColor: 'var(--accent-current)',
+                width: "4px",
+                height: "4px",
+                backgroundColor: "var(--accent-current)",
                 opacity: 0.4,
               }}
               initial={prefersReducedMotion ? false : { scale: 0 }}
               animate={hasBeenInView ? { scale: 1 } : {}}
-              transition={{ delay: 1.2 + i * 0.1, type: 'spring', stiffness: 200 }}
+              transition={{
+                delay: 1.2 + i * 0.1,
+                type: "spring",
+                stiffness: 200,
+              }}
             />
           ))}
         </div>

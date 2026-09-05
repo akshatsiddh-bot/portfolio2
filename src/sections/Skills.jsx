@@ -114,7 +114,10 @@ function SkillsGrid() {
   );
 }
 
-const HUB_SKILLS = new Set(['javascript', 'react', 'nodejs', 'docker', 'mongodb']);
+const SELECTED_NODES = new Set([
+  'javascript', 'react', 'typescript', 'nodejs', 'express',
+  'mongodb', 'sql', 'docker', 'aws', 'git', 'jest', 'tailwind'
+]);
 
 function SkillsConstellation() {
   const [hoveredSkill, setHoveredSkill] = useState(null);
@@ -234,37 +237,33 @@ function SkillsConstellation() {
           const isConnected = connectedSet.has(skill.id);
           const isDimmed = hoveredSkill && !isHovered && !isConnected;
           const catColor = getCategoryColor(skill.category);
-          const isHub = HUB_SKILLS.has(skill.id);
+          const isSelected = SELECTED_NODES.has(skill.id);
 
           return (
-            <g
+            <motion.g
               key={skill.id}
               onMouseEnter={() => setHoveredSkill(skill.id)}
               onMouseLeave={() => setHoveredSkill(null)}
               style={{ cursor: 'pointer' }}
+              animate={
+                shouldShow && isSelected && !hoveredSkill && !prefersReducedMotion
+                  ? {
+                      y: [0, i % 2 === 0 ? -1.5 : 1.5, 0],
+                      x: [0, i % 3 === 0 ? 1 : -1, 0],
+                    }
+                  : { y: 0, x: 0 }
+              }
+              transition={
+                isSelected
+                  ? {
+                      duration: 5.5 + (i % 3) * 0.8,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: (i % 4) * 0.5,
+                    }
+                  : { duration: 0.2 }
+              }
             >
-              {/* Resting beacon pulse for hub skills */}
-              {isHub && !hoveredSkill && !prefersReducedMotion && (
-                <motion.circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={4}
-                  fill="none"
-                  stroke={catColor}
-                  strokeWidth={0.75}
-                  animate={{
-                    r: [4, 12, 14],
-                    opacity: [0.55, 0.15, 0],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'easeOut',
-                    delay: (i % 4) * 0.6,
-                  }}
-                />
-              )}
-
               {/* Node circle */}
               <motion.circle
                 cx={pos.x}
@@ -275,7 +274,13 @@ function SkillsConstellation() {
                 animate={
                   shouldShow
                     ? {
-                        scale: isHovered ? 1.25 : isConnected ? 1.15 : [1, 1.08, 1],
+                        scale: isHovered
+                          ? 1.25
+                          : isConnected
+                          ? 1.15
+                          : isSelected && !hoveredSkill && !prefersReducedMotion
+                          ? [1, 1.12, 1]
+                          : 1,
                         opacity: isDimmed ? 0.2 : 1,
                       }
                     : {}
@@ -283,12 +288,14 @@ function SkillsConstellation() {
                 transition={{
                   scale: isHovered || isConnected
                     ? { duration: 0.2 }
-                    : {
-                        duration: 3.2 + (i % 3),
+                    : isSelected && !hoveredSkill
+                    ? {
+                        duration: 4.8 + (i % 3) * 0.6,
                         repeat: Infinity,
                         ease: 'easeInOut',
-                        delay: (i % 5) * 0.3,
-                      },
+                        delay: (i % 4) * 0.4,
+                      }
+                    : { duration: 0.2 },
                   opacity: { duration: 0.2 },
                 }}
               />
@@ -327,7 +334,7 @@ function SkillsConstellation() {
               >
                 {skill.name}
               </motion.text>
-            </g>
+            </motion.g>
           );
         })}
       </svg>

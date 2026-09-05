@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -35,6 +35,11 @@ const fadeUp = {
   }),
 };
 
+/* ── Lens constants ── */
+const LENS_RADIUS = 105;
+const INNER_ZONE = LENS_RADIUS - 18;
+const REFRACT_ZONE = 70;
+
 export default function Hero() {
   const heroRef = useRef(null);
   const nameFirstRef = useRef(null);
@@ -46,6 +51,15 @@ export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
 
+  /* ── Lens refs (no React state for position — direct DOM for perf) ── */
+  const headingRef = useRef(null);
+  const letterElsRef = useRef([]);
+  const lensCircleRef = useRef(null);
+  const lensActiveRef = useRef(false);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef(null);
+  const [lensVisible, setLensVisible] = useState(false);
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -53,10 +67,7 @@ export default function Hero() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  /* GSAP scroll-driven transformation: Hero → About
-     Hero elements physically migrate — name words split and fade to ghost traces,
-     metadata migrates downward toward About's indicator position,
-     decorative lines extend as structural bridges. */
+  /* ── GSAP scroll-driven transformation (unchanged) ── */
   useEffect(() => {
     if (prefersReducedMotion || isMobile) return;
 
@@ -72,7 +83,6 @@ export default function Hero() {
         },
       });
 
-      // Phase 1 (0–0.35): Name splits apart, words drift independently
       tl.to(
         nameFirstRef.current,
         { x: '-15vw', y: '-10vh', scale: 0.65, opacity: 0.08, duration: 0.35 },
@@ -83,8 +93,6 @@ export default function Hero() {
         { x: '12vw', y: '8vh', scale: 0.65, opacity: 0.08, duration: 0.35 },
         0
       )
-
-      // Phase 2 (0–0.25): Metadata migrates downward toward About area
       .to(
         roleRef.current,
         { y: '30vh', x: '-30vw', scale: 0.85, opacity: 0.6, duration: 0.35 },
@@ -92,16 +100,12 @@ export default function Hero() {
       )
       .to(metaRef.current, { opacity: 0, y: 40, duration: 0.2 }, 0)
       .to(scrollRef.current, { opacity: 0, duration: 0.12 }, 0)
-
-      // Phase 3 (0.2–0.6): Decorative lines grow — structural bridges to About
       .fromTo(
         linesRef.current?.children || [],
         { scaleX: 0 },
         { scaleX: 1, stagger: 0.04, duration: 0.3 },
         0.2
       )
-
-      // Phase 4 (0.5–0.8): Ghost traces of name remain briefly
       .to(
         nameFirstRef.current,
         { x: '-22vw', y: '-15vh', opacity: 0.03, duration: 0.3 },
@@ -112,106 +116,118 @@ export default function Hero() {
         { x: '20vw', y: '12vh', opacity: 0.03, duration: 0.3 },
         0.5
       )
-
-      // Phase 5 (0.6–1.0): Role label settles at About indicator position
-      .to(
-        roleRef.current,
-        { opacity: 0, duration: 0.2 },
-        0.6
-      )
-      // Lines extend and fade
+      .to(roleRef.current, { opacity: 0, duration: 0.2 }, 0.6)
       .to(
         linesRef.current?.children || [],
         { opacity: 0, scaleX: 1.5, duration: 0.3, stagger: 0.03 },
         0.7
       )
-      // Final clear
-      .to(
-        nameFirstRef.current,
-        { opacity: 0, duration: 0.15 },
-        0.85
-      )
-      .to(
-        nameLastRef.current,
-        { opacity: 0, duration: 0.15 },
-        0.85
-      );
+      .to(nameFirstRef.current, { opacity: 0, duration: 0.15 }, 0.85)
+      .to(nameLastRef.current, { opacity: 0, duration: 0.15 }, 0.85);
     }, heroRef);
 
     return () => ctx.revert();
   }, [prefersReducedMotion, isMobile]);
 
+  /* ── Lens: rAF loop for smooth per-letter distortion ── */
+  const applyLens = useCallback(() => {
+    if (!lensActiveRef.current || !headingRef.current) return;
+
+    const hRect = headingRef.current.getBoundingClientRect();
+    const mx = mouseRef.current.x;
+    const my = mouseRef.current.y;
+
+    // Position the lens circle
+    if (lensCircleRef.current) {
+      lensCircleRef.current.style.transform =
+        `translate(${mx - LENS_RADIUS}px, ${my - LENS_RADIUS}px)`;
+    }
+
+    // Per-letter distortion
+    const els = letterElsRef.current;
+    for (let idx = 0; idx < els.length; idx++) {
+      const el = els[idx];
+      if (!el) continue;
+
+      const lr = el.getBoundingClientRect();
+      const lx = lr.left + lr.width / 2 - hRect.left;
+      const ly = lr.top + lr.height / 2 - hRect.top;
+      const dx = lx - mx;
+      const dy = ly - my;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < INNER_ZONE) {
+        // Inside the lens core — subtle magnification
+        const proximity = 1 - dist / INNER_ZONE;
+        const s = 1 + proximity * 0.08;
+        el.style.transform = `scale(${s})`;
+        el.style.transition = 'transform 0.1s ease-out';
+      } else if (dist < INNER_ZONE + REFRACT_ZONE) {
+        // Refraction rim — letters push outward along the radial vector
+        const t = (dist - INNER_ZONE) / REFRACT_ZONE;
+        const force = Math.sin(t * Math.PI) * 9;
+        const angle = Math.atan2(dy, dx);
+        const px = Math.cos(angle) * force;
+        const py = Math.sin(angle) * force;
+        const skew = Math.cos(angle) * (dx > 0 ? 2.5 : -2.5) * (1 - t);
+        el.style.transform =
+          `translate3d(${px.toFixed(1)}px,${py.toFixed(1)}px,0) skewX(${skew.toFixed(1)}deg)`;
+        el.style.transition = 'transform 0.06s ease-out';
+      } else {
+        // Outside — reset
+        el.style.transform = '';
+        el.style.transition = 'transform 0.22s ease-out';
+      }
+    }
+
+    rafRef.current = requestAnimationFrame(applyLens);
+  }, []);
+
+  const clearLens = useCallback(() => {
+    const els = letterElsRef.current;
+    for (let i = 0; i < els.length; i++) {
+      if (els[i]) {
+        els[i].style.transform = '';
+        els[i].style.transition = 'transform 0.25s ease-out';
+      }
+    }
+  }, []);
+
+  const onNameMouseMove = useCallback((e) => {
+    if (!headingRef.current) return;
+    const rect = headingRef.current.getBoundingClientRect();
+    mouseRef.current.x = e.clientX - rect.left;
+    mouseRef.current.y = e.clientY - rect.top;
+  }, []);
+
+  const onNameEnter = useCallback(() => {
+    if (isMobile || prefersReducedMotion) return;
+    lensActiveRef.current = true;
+    setLensVisible(true);
+    rafRef.current = requestAnimationFrame(applyLens);
+  }, [isMobile, prefersReducedMotion, applyLens]);
+
+  const onNameLeave = useCallback(() => {
+    lensActiveRef.current = false;
+    setLensVisible(false);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    clearLens();
+  }, [clearLens]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   const firstLetters = personal.firstName.split('');
   const lastLetters = personal.lastName.split('');
+  const totalLetters = firstLetters.length + lastLetters.length;
 
-  const headingRef = useRef(null);
-  const letterRefs = useRef([]);
-  const [lensState, setLensState] = useState({ active: false, x: 0, y: 0 });
-
-  const handleMouseMove = (e) => {
-    if (!headingRef.current || isMobile || prefersReducedMotion) return;
-    const rect = headingRef.current.getBoundingClientRect();
-    setLensState({
-      active: true,
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  const handleMouseEnter = () => {
-    if (!isMobile && !prefersReducedMotion) {
-      setLensState((prev) => ({ ...prev, active: true }));
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setLensState({ active: false, x: 0, y: 0 });
-  };
-
-  const getLetterStyle = (idx) => {
-    if (!lensState.active || prefersReducedMotion || isMobile) return {};
-    const el = letterRefs.current[idx];
-    if (!el || !headingRef.current) return {};
-
-    const headingRect = headingRef.current.getBoundingClientRect();
-    const letterRect = el.getBoundingClientRect();
-    const lx = letterRect.left + letterRect.width / 2 - headingRect.left;
-    const ly = letterRect.top + letterRect.height / 2 - headingRect.top;
-
-    const dx = lx - lensState.x;
-    const dy = ly - lensState.y;
-    const dist = Math.hypot(dx, dy);
-
-    const LENS_RADIUS = 110;
-    const REFRACTION_ZONE = 75;
-
-    // Inside lens: clearly recognizable, subtle crisp magnification
-    if (dist < LENS_RADIUS - 15) {
-      return {
-        transform: 'scale(1.05)',
-        transition: 'transform 0.12s ease-out',
-      };
-    }
-
-    // Surrounding rim: subtly bent/refracted along radial vector
-    if (dist < LENS_RADIUS + REFRACTION_ZONE) {
-      const normalized = (dist - (LENS_RADIUS - 15)) / REFRACTION_ZONE;
-      const force = Math.sin(normalized * Math.PI) * 11;
-      const angle = Math.atan2(dy, dx);
-      const pushX = Math.cos(angle) * force;
-      const pushY = Math.sin(angle) * force;
-      const rotate = Math.cos(angle) * (dx > 0 ? 3 : -3);
-
-      return {
-        transform: `translate3d(${pushX.toFixed(1)}px, ${pushY.toFixed(1)}px, 0) rotate(${rotate.toFixed(1)}deg) skewX(${(pushX * 0.35).toFixed(1)}deg)`,
-        transition: 'transform 0.08s ease-out',
-      };
-    }
-
-    return {
-      transition: 'transform 0.2s ease-out',
-    };
-  };
+  // Ensure refs array is correct length
+  if (letterElsRef.current.length !== totalLetters) {
+    letterElsRef.current = Array(totalLetters).fill(null);
+  }
 
   return (
     <section
@@ -229,40 +245,40 @@ export default function Hero() {
 
       {/* Main content */}
       <div className="text-center px-6">
-        {/* Name with circular lens hover interaction */}
+        {/* Name — with lens hover interaction */}
         <div
           ref={headingRef}
-          className="relative inline-block select-none cursor-default"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          className="relative inline-block"
+          onMouseMove={onNameMouseMove}
+          onMouseEnter={onNameEnter}
+          onMouseLeave={onNameLeave}
         >
-          {/* Circular lens element */}
-          {lensState.active && !prefersReducedMotion && (
+          {/* Lens circle — glass ring that follows cursor */}
+          {lensVisible && (
             <div
-              className="absolute pointer-events-none rounded-full"
+              ref={lensCircleRef}
+              className="absolute pointer-events-none"
               style={{
-                left: lensState.x,
-                top: lensState.y,
-                width: 220,
-                height: 220,
-                transform: 'translate(-50%, -50%)',
-                border:
-                  '1.5px solid color-mix(in srgb, var(--accent-current) 45%, transparent)',
+                width: LENS_RADIUS * 2,
+                height: LENS_RADIUS * 2,
+                borderRadius: '50%',
+                border: '1.5px solid color-mix(in srgb, var(--accent-current) 40%, transparent)',
                 boxShadow:
-                  '0 0 26px color-mix(in srgb, var(--accent-current) 14%, transparent), inset 0 0 20px color-mix(in srgb, var(--accent-current) 10%, transparent)',
+                  '0 0 24px color-mix(in srgb, var(--accent-current) 10%, transparent),' +
+                  'inset 0 0 18px color-mix(in srgb, var(--accent-current) 6%, transparent)',
                 background:
-                  'radial-gradient(circle at 35% 35%, color-mix(in srgb, #fff 12%, transparent) 0%, transparent 65%)',
-                backdropFilter: 'blur(0.5px)',
-                WebkitBackdropFilter: 'blur(0.5px)',
+                  'radial-gradient(circle at 38% 38%, color-mix(in srgb, #fff 8%, transparent) 0%, transparent 60%)',
+                backdropFilter: 'blur(0.4px)',
+                WebkitBackdropFilter: 'blur(0.4px)',
                 zIndex: 20,
+                willChange: 'transform',
               }}
             >
+              {/* Inner highlight ring */}
               <div
-                className="absolute inset-0 rounded-full"
+                className="absolute inset-[3px] rounded-full"
                 style={{
-                  border: '1px solid color-mix(in srgb, #fff 25%, transparent)',
-                  opacity: 0.5,
+                  border: '0.5px solid color-mix(in srgb, #fff 18%, transparent)',
                 }}
               />
             </div>
@@ -276,13 +292,13 @@ export default function Hero() {
                 firstLetters.map((letter, i) => (
                   <motion.span
                     key={`first-${i}`}
-                    ref={(el) => (letterRefs.current[i] = el)}
+                    ref={(el) => { letterElsRef.current[i] = el; }}
                     className="inline-block"
                     custom={i}
                     initial="hidden"
                     animate="visible"
                     variants={letterVariants}
-                    style={getLetterStyle(i)}
+                    style={{ willChange: 'transform' }}
                   >
                     {letter}
                   </motion.span>
@@ -290,23 +306,22 @@ export default function Hero() {
               )}
             </span>
             <br />
-            {/* Name — Last */}
             <span ref={nameLastRef} className="inline-block">
               {prefersReducedMotion ? (
                 personal.lastName
               ) : (
                 lastLetters.map((letter, i) => {
-                  const letterIdx = i + firstLetters.length;
+                  const idx = i + firstLetters.length;
                   return (
                     <motion.span
                       key={`last-${i}`}
-                      ref={(el) => (letterRefs.current[letterIdx] = el)}
+                      ref={(el) => { letterElsRef.current[idx] = el; }}
                       className="inline-block"
-                      custom={letterIdx}
+                      custom={idx}
                       initial="hidden"
                       animate="visible"
                       variants={letterVariants}
-                      style={getLetterStyle(letterIdx)}
+                      style={{ willChange: 'transform' }}
                     >
                       {letter}
                     </motion.span>

@@ -1,7 +1,7 @@
-import { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { useInView } from '../systems/useInView';
-import { useReducedMotion } from '../systems/useReducedMotion';
+import { useRef } from "react";
+import { motion } from "framer-motion";
+import { useInView } from "../systems/useInView";
+import { useReducedMotion } from "../systems/useReducedMotion";
 
 /**
  * Deterministic pseudo-random: same index always produces same value.
@@ -13,7 +13,7 @@ function seededRandom(index, seed = 0) {
 }
 
 const modes = {
-  'slide-up': {
+  "slide-up": {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1 },
   },
@@ -40,19 +40,21 @@ const modes = {
 
 export default function TextReveal({
   text,
-  tag: Tag = 'p',
-  className = '',
+  tag: Tag = "p",
+  className = "",
   style = {},
   delay = 0,
-  mode = 'slide-up',
+  mode = "slide-up",
   staggerChildren = 0.02,
+  asParagraph = false,
+  prose = false,
 }) {
   const ref = useRef(null);
   const { hasBeenInView } = useInView(ref, { threshold: 0.15 });
   const prefersReducedMotion = useReducedMotion();
 
-  const words = text.split(' ');
-  const modeConfig = modes[mode] || modes['slide-up'];
+  const isProse = asParagraph || prose || mode === "prose";
+  const modeConfig = modes[mode] || modes["slide-up"];
 
   if (prefersReducedMotion) {
     return (
@@ -62,12 +64,38 @@ export default function TextReveal({
     );
   }
 
+  if (isProse) {
+    const hiddenY = typeof modeConfig.hidden?.y === "number" ? modeConfig.hidden.y : 16;
+    return (
+      <Tag ref={ref} className={className} style={style}>
+        <motion.span
+          style={{ display: "block" }}
+          initial={{ y: hiddenY, opacity: 0 }}
+          animate={
+            hasBeenInView
+              ? { y: 0, opacity: 1 }
+              : { y: hiddenY, opacity: 0 }
+          }
+          transition={{
+            duration: 0.55,
+            delay: delay,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
+          {text}
+        </motion.span>
+      </Tag>
+    );
+  }
+
+  const words = text.split(" ");
+
   return (
     <Tag ref={ref} className={className} style={style} aria-label={text}>
       <motion.span
-        style={{ display: 'inline' }}
+        style={{ display: "inline" }}
         initial="hidden"
-        animate={hasBeenInView ? 'visible' : 'hidden'}
+        animate={hasBeenInView ? "visible" : "hidden"}
         variants={{
           hidden: {},
           visible: {
@@ -79,12 +107,12 @@ export default function TextReveal({
         }}
       >
         {words.map((word, i) => (
-          <span key={i} style={{ display: 'inline-block', whiteSpace: 'pre' }}>
+          <span key={i} style={{ display: "inline-block", whiteSpace: "pre" }}>
             <motion.span
-              style={{ display: 'inline-block' }}
+              style={{ display: "inline-block" }}
               variants={{
                 hidden:
-                  typeof modeConfig.hidden === 'function'
+                  typeof modeConfig.hidden === "function"
                     ? modeConfig.hidden(i)
                     : modeConfig.hidden,
                 visible: {
@@ -99,7 +127,7 @@ export default function TextReveal({
             >
               {word}
             </motion.span>
-            {i < words.length - 1 ? ' ' : ''}
+            {i < words.length - 1 ? " " : ""}
           </span>
         ))}
       </motion.span>
