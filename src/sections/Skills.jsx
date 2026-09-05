@@ -288,6 +288,14 @@ function SkillsConstellation() {
                   : { duration: 0.2 }
               }
             >
+              {/* Invisible enlarged hover/click detection area */}
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={28}
+                fill="transparent"
+                pointerEvents="all"
+              />
               {/* Node circle */}
               <motion.circle
                 cx={pos.x}
