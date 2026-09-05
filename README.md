@@ -1,1 +1,1 @@
-# portfolio2
+<p align="center"> <a href="https://portfolio2-smoky-iota.vercel.app/" target="_blank"> <img src="https://img.shields.io/badge/🌐%20Live%20Portfolio-Visit%20Now-blue?style=for-the-badge" alt="Live Portfolio"> </a> </p>
